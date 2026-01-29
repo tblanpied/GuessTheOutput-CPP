@@ -1,0 +1,358 @@
+[
+  {
+    "id": "p0001",
+    "title": "Basic Hello World",
+    "difficulty": 1,
+    "concepts": ["main-function", "statements", "semicolons", "include"],
+    "explanation": "This is the canonical 'Hello world!' program. Every valid C++ program **must** have exactly one `main()` function. The `#include <iostream>` directive brings in the standard library for console I/O. Statements end with semicolons (`;`). The `return 0;` indicates successful program completion to the operating system."
+  },
+  {
+    "id": "p0002",
+    "title": "Missing Semicolon",
+    "difficulty": 2,
+    "concepts": ["syntax-error", "semicolons"],
+    "explanation": "**Syntax error**: Statements must end with a semicolon (`;`). The compiler expects a `;` after the `std::cout` expression but finds `return` instead. Clang reports the error on line 5; some compilers report line 6. **Key insight**: Check the line *before* the reported error line."
+  },
+  {
+    "id": "p0003",
+    "title": "No main() Function",
+    "difficulty": 2,
+    "concepts": ["main-function", "linker-error"],
+    "explanation": "**Linker error**: Every executable C++ program **requires** exactly one `main()` function as the entry point. Without it, the linker cannot create an executable. `hello()` is just a regular function that never gets called."
+  },
+  {
+    "id": "p0004",
+    "title": "Missing #include",
+    "difficulty": 2,
+    "concepts": ["preprocessor", "include"],
+    "explanation": "**Semantic error**: `std::cout` is declared in `<iostream>`. Without `#include <iostream>`, the compiler doesn't know what `std::cout` is. **Preprocessor directives** like `#include` must be at file scope (not inside functions)."
+  },
+  {
+    "id": "p0005",
+    "title": "Missing Closing Brace",
+    "difficulty": 2,
+    "concepts": ["braces", "compound-statement"],
+    "explanation": "**Syntax error**: Every `{` must have a matching `}`. Curly braces `{}` define **compound statements** (function bodies, blocks). The compiler reaches EOF without finding the closing brace for `main()`."
+  },
+  {
+    "id": "p0006",
+    "title": "Duplicate main()",
+    "difficulty": 3,
+    "concepts": ["main-function", "multiple-definition"],
+    "explanation": "**Semantic error**: Exactly **one** `main()` function is allowed per program. Multiple definitions cause an error (\"multiple definition of `main`\"). Only the first `main()` would execute even if it somehow compiled."
+  },
+  {
+    "id": "p0007",
+    "title": "Empty main()",
+    "difficulty": 1,
+    "concepts": ["main-function", "statements"],
+    "explanation": "Perfectly valid! An empty `main()` with no statements executes instantly and returns success to the OS. **Statements** are the basic unit of execution. No statements = nothing to execute."
+  },
+  {
+    "id": "p0008",
+    "title": "Missing Opening Brace",
+    "difficulty": 3,
+    "concepts": ["braces", "syntax-error"],
+    "explanation": "**Syntax error**: Function bodies require `{}` braces. Without the opening `{`, the compiler treats `std::cout` as a misplaced declaration, then chokes on `return 0;` outside any function scope."
+  },
+  {
+    "id": "p0010",
+    "title": "Statement After return",
+    "difficulty": 3,
+    "concepts": ["statements", "control-flow"],
+    "explanation": "**Syntax error**: `return` immediately exits `main()`. The `std::cout` after `return 0` (even with missing `;`) is unreachable. Compilers flag this as a syntax error due to the malformed statement."
+  },
+  {
+    "id": "p0011",
+    "title": "Multiple Statements",
+    "difficulty": 1,
+    "concepts": ["statements", "sequential-execution"],
+    "explanation": "**Statements execute sequentially** from top to bottom. Each `std::cout << ... << std::endl;` is a complete **expression statement**. `<<` is the output stream operator; `std::endl` adds `\\n` + flushes."
+  },
+  {
+    "id": "p0012",
+    "title": "Implicit main() Return",
+    "difficulty": 2,
+    "concepts": ["return-statement", "main-function"],
+    "explanation": "Valid! **C++17 and later**: `main()` implicitly returns `0` if no `return` statement is reached. Earlier standards required explicit `return 0;`. This is the only function with this special behavior."
+  },
+  {
+    "id": "p0013",
+    "title": "Ignoring single-line comments",
+    "difficulty": 1,
+    "concepts": ["single-line comments", "cout", "ignored code"],
+    "explanation": "Text following `//` on a line is completely ignored by the compiler. Only the statements not commented out produce output."
+  },
+  {
+    "id": "p0014",
+    "title": "Multi-line comment blocking out code",
+    "difficulty": 2,
+    "concepts": ["multi-line comments", "commenting out code"],
+    "explanation": "The `/* ... */` syntax tells the compiler to ignore everything between them, including valid code, so only the final `std::cout` executes."
+  },
+  {
+    "id": "p0015",
+    "title": "Nested multi-line comments causing error",
+    "difficulty": 3,
+    "concepts": ["multi-line comments", "nesting", "syntax error"],
+    "explanation": "C++ does not allow nested multi-line comments. The first `*/` ends the comment, leaving stray code that leads to a syntax error during compilation."
+  },
+  {
+    "id": "p0016",
+    "title": "Commenting out code temporarily",
+    "difficulty": 1,
+    "concepts": ["commenting out code", "single-line comments"],
+    "explanation": "Developers often use `//` to temporarily disable lines for debugging. The commented `cout` line does not run, so only the active one prints output."
+  },
+  {
+    "id": "p0017",
+    "title": "Mixing single-line and multi-line comments",
+    "difficulty": 2,
+    "concepts": ["single-line comments", "multi-line comments"],
+    "explanation": "Both `//` and `/* ... */` comments can coexist. Only code outside comments is executed, so lines 1 and 4 print normally."
+  },
+  {
+    "id": "p0018",
+    "title": "Comments inside strings",
+    "difficulty": 3,
+    "concepts": ["string literals", "comments", "string boundaries"],
+    "explanation": "Comment symbols `//` and `/*` inside double-quoted strings are treated as literal characters, not comment starters. Only the `/*` outside the string starts a comment that cuts off the line."
+  },
+  {
+    "id": "p0019",
+    "title": "Basic Integer Variable",
+    "difficulty": 1,
+    "concepts": ["variables", "definition", "int", "initialization"],
+    "explanation": "The variable `x` is defined and initialized with value `5`. `std::cout << x` prints `5` to stdout. This demonstrates basic variable definition, initialization, and output."
+  },
+  {
+    "id": "p0020",
+    "title": "Uninitialized Variable",
+    "difficulty": 2,
+    "concepts": ["variables", "uninitialized", "undefined-behavior"],
+    "explanation": "The variable `x` is defined but not initialized, so it contains garbage/indeterminate value. Printing it leads to **undefined behavior**, which may cause runtime issues or crashes in strict environments.",
+    "UB": true
+  },
+  {
+    "id": "p0021",
+    "title": "Multiple Variables Correct",
+    "difficulty": 2,
+    "concepts": ["variables", "multiple-definition"],
+    "explanation": "**Correct syntax:** Multiple `int` variables can be defined in one statement separated by commas. `a` gets `1`, `b` gets `2`, printing `12`."
+  },
+  {
+    "id": "p0022",
+    "title": "Multiple Variables Wrong Type",
+    "difficulty": 3,
+    "concepts": ["variables", "syntax-error", "type-mismatch"],
+    "explanation": "**Syntax error:** Cannot mix types like `int` and `double` in the same definition statement. Each type needs its own statement."
+  },
+  {
+    "id": "p0023",
+    "title": "Char Literal",
+    "difficulty": 1,
+    "concepts": ["char", "literals", "single-quotes"],
+    "explanation": "Character literals use **single quotes** `'A'`. The `char` variable `c` stores `'A'` (ASCII 65), which prints as `A`."
+  },
+  {
+    "id": "p0024",
+    "title": "Unquoted Character",
+    "difficulty": 3,
+    "concepts": ["literals", "semantic-error", "quotes"],
+    "explanation": "**Semantic error:** Character literals require single quotes `'A'`. Without quotes, `A` is treated as an undeclared identifier, causing compilation failure."
+  },
+  {
+    "id": "p0025",
+    "title": "Multiple Type Declaration Error",
+    "difficulty": 3,
+    "concepts": ["variables", "syntax-error", "multiple-definition"],
+    "explanation": "**Syntax error:** Only one type specifier is allowed per declaration. `int a, int b;` repeats the type `int` for `b`, which is invalid syntax. Use `int a, b;` instead."
+  },
+  {
+    "id": "p0026",
+    "title": "Double Quotes for Char",
+    "difficulty": 3,
+    "concepts": ["char", "literals", "semantic-error", "quotes"],
+    "explanation": "**Semantic error:** `char` values require **single quotes** `'A'` (one character). Double quotes `\"A\"` create a string literal (`const char[2]`), causing type mismatch."
+  },
+  {
+    "id": "p0027",
+    "title": "Single Quotes for String",
+    "difficulty": 2,
+    "concepts": ["literals", "semantic-error", "quotes"],
+    "explanation": "**Semantic error:** String literals require **double quotes** `\"Hello\"`. Single quotes `'Hello'` has type `int`, where its value is implementation-defined (depends on compiler, architecture, endianness). So, `std::string` is trying to convert the `int` to a `char` which is too large."
+  },
+  {
+    "id": "p0028",
+    "title": "Reassignment Overwrites the Old Value",
+    "difficulty": 1,
+    "concepts": ["assignment", "variable", "output order"],
+    "explanation": "The variable `num` is first initialized to 10, then reassigned to 25. The first output prints 10, and after reassignment it prints 25, resulting in '1025'."
+  },
+  {
+    "id": "p0029",
+    "title": "Copy vs List Initialization",
+    "difficulty": 3,
+    "concepts": [
+      "copy-initialization",
+      "list-initialization",
+      "narrowing conversion",
+      "syntax error"
+    ],
+    "explanation": "List-initialization `{3.9}` disallows narrowing conversion from double to int. Hence, while `int a = 3.9;` works (truncates to 3), `int b {3.9};` fails with a compile-time error."
+  },
+  {
+    "id": "p0030",
+    "title": "Value Initialization with Empty Braces",
+    "difficulty": 1,
+    "concepts": ["value-initialization", "zero-initialization"],
+    "explanation": "Using empty braces `{}` performs value-initialization. For fundamental types like int, this results in zero-initialization, so `count` becomes 0."
+  },
+  {
+    "id": "p0031",
+    "title": "Multiple Variables with One Initializer Trap",
+    "difficulty": 4,
+    "concepts": [
+      "uninitialized variable",
+      "multiple declarations",
+      "undefined behavior"
+    ],
+    "explanation": "Only `b` is initialized to 5; `a` is left uninitialized, resulting in undefined behavior when printed. The output is unpredictable, which may result in a runtime error.",
+    "UB": true
+  },
+  {
+    "id": "p0032",
+    "title": "[[maybe_unused]] Suppresses Warnings",
+    "difficulty": 2,
+    "concepts": ["maybe_unused", "compiler warnings", "C++17 feature"],
+    "explanation": "The `[[maybe_unused]]` attribute tells the compiler to ignore unused variable warnings. The program compiles cleanly and prints 'Hello'."
+  },
+  {
+    "id": "p0033",
+    "title": "Direct vs Copy Initialization Comparison",
+    "difficulty": 1,
+    "concepts": [
+      "direct-initialization",
+      "copy-initialization",
+      "list-initialization"
+    ],
+    "explanation": "All four forms initialize variables to 5 and behave identically for ints in C++17+. Their sum is 20."
+  },
+  {
+    "id": "p0034",
+    "title": "Zero and Custom Initializations Together",
+    "difficulty": 1,
+    "concepts": ["value-initialization", "direct-list-initialization"],
+    "explanation": "Value-initialization with `{}` gives 0, direct-list-initialization with `{42}` assigns 42. Output is '0 42'."
+  },
+  {
+    "id": "p0035",
+    "title": "Disallowed Narrowing Conversion in List Initialization",
+    "difficulty": 3,
+    "concepts": [
+      "list-initialization",
+      "narrowing conversion",
+      "compile-time error"
+    ],
+    "explanation": "List-initialization prevents narrowing conversions like from double 8.2 to int. The compiler stops with a compile-time error."
+  },
+  {
+    "id": "p0036",
+    "title": "Default Initialization Produces Garbage Value",
+    "difficulty": 4,
+    "concepts": [
+      "default-initialization",
+      "uninitialized variable",
+      "undefined behavior"
+    ],
+    "explanation": "Default-initialized ints have indeterminate values. Accessing or printing `n` is undefined behavior, which may result in a runtime error.",
+    "UB": true
+  },
+  {
+    "id": "p0037",
+    "title": "Mixing Initialization Styles in One Program",
+    "difficulty": 2,
+    "concepts": [
+      "value-initialization",
+      "copy-initialization",
+      "multiple declarations"
+    ],
+    "explanation": "Variable `a` is value-initialized with `{}`, giving it a value of 0. Variable `b` is copy-initialized to 5. Variables `c` and `d` are both copy-initialized to 10 and 15 respectively. When printed, the program outputs '0 5 10 15'."
+  },
+  {
+    "id": "p0038",
+    "title": "Concatenation and line breaks",
+    "difficulty": 1,
+    "concepts": [
+      "iostream",
+      "std::cout",
+      "operator<<",
+      "newline",
+      "std::endl",
+      "\\n"
+    ],
+    "explanation": "Multiple `<<` insertions build one output stream. `\"B\\n\"` outputs a newline without flushing, while `std::endl` outputs a newline and flushes; visually here they both just move to the next line."
+  },
+  {
+    "id": "p0039",
+    "title": "No newline until you add one",
+    "difficulty": 1,
+    "concepts": ["std::cout", "newline", "buffering", "\\n"],
+    "explanation": "Separate `std::cout` statements do not automatically create separate lines. Output stays on the same line until a newline character (such as `\\n`) is sent to the stream."
+  },
+  {
+    "id": "p0040",
+    "title": "Failed extraction stops later reads",
+    "difficulty": 4,
+    "concepts": [
+      "std::cin",
+      "operator>>",
+      "extraction-failure",
+      "stream-state",
+      "buffering"
+    ],
+    "explanation": "`a` successfully extracts `12`, leaving `abc 7` in the input buffer. Extracting into `b` then fails (no valid integer at the front), so `b` becomes `0` and the stream enters a failed state; the extraction for `c` aborts immediately and `c` keeps its previous value.",
+    "stdin": "12abc 7\n"
+  },
+  {
+    "id": "p0041",
+    "title": "Fractional part left in the buffer",
+    "difficulty": 3,
+    "concepts": [
+      "std::cin",
+      "operator>>",
+      "partial-extraction",
+      "buffering",
+      "char"
+    ],
+    "explanation": "Reading an `int` from `3.7` extracts only the leading `3` and stops before the `.`. The next extraction into `char` reads that `.` character, and then the final `int` extraction reads `7`.",
+    "stdin": "3.7\n"
+  },
+  {
+    "id": "p0042",
+    "title": "Whitespace and plus sign",
+    "difficulty": 2,
+    "concepts": [
+      "std::cin",
+      "operator>>",
+      "whitespace-skipping",
+      "signed-input"
+    ],
+    "explanation": "Formatted extraction with `>>` skips leading whitespace and accepts an optional leading `+` or `-` sign for integers, so both values parse cleanly.",
+    "stdin": "   +5 -2\n"
+  },
+  {
+    "id": "p0043",
+    "title": "Newline is skipped for the next extraction",
+    "difficulty": 3,
+    "concepts": [
+      "std::cin",
+      "operator>>",
+      "whitespace-skipping",
+      "buffering",
+      "char"
+    ],
+    "explanation": "After reading the integer, the trailing newline remains in the input buffer. The next `>>` into a `char` discards leading whitespace (including that newline) and then reads the next non-whitespace character, which is `x`.",
+    "stdin": "9\nx\n"
+  }
+]

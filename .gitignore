@@ -1,0 +1,5 @@
+# Generated files
+data/
+
+# Build artifacts
+build/
