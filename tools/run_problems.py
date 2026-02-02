@@ -8,6 +8,7 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROBLEMS_JSON = ROOT / "problems" / "problems.json"
+PROBLEMS_SRC = ROOT / "problems" / "src"
 OUTPUT_JSON = ROOT / "data" / "problems.generated.json"
 
 MAKE_CMD = ["make"]
@@ -40,16 +41,6 @@ def run_command(cmd, stdin=None):
         return proc
     except subprocess.TimeoutExpired:
         return None
-
-
-def classify_compile_error(stderr: str) -> str:
-    s = stderr.lower()
-
-    if "undefined reference" in s or "ld:" in s:
-        return "compile_error.linker"
-    if "expected" in s or "syntax" in s or "before" in s:
-        return "compile_error.syntax"
-    return "compile_error.semantic"
 
 def strip_runner_line(stdout: str, pid: str) -> str:
     lines = stdout.splitlines(keepends=True)
@@ -126,14 +117,13 @@ def main():
         result = None
         if compile_proc is None:
             result = {
-                "kind": "compile_error.semantic",
-                "value": "Compilation timed out"
+                "errorType": "compilation-error",
+                "errorMessage": ansi_to_tokens("Compilation timed out")
             }
         elif compile_proc.returncode != 0:
-            kind = classify_compile_error(compile_proc.stderr)
             result = {
-                "kind": kind,
-                "value": ansi_to_tokens(strip_make_error_line(compile_proc.stderr.strip()))
+                "errorType": "compilation-error",
+                "errorMessage": ansi_to_tokens(strip_make_error_line(compile_proc.stderr.strip()))
             }
         else:
             # ----------------------
@@ -147,31 +137,31 @@ def main():
 
             if run_proc is None:
                 result = {
-                    "kind": "runtime_error",
-                    "value": "Execution timed out"
+                    "errorType": "runtime-error",
+                    "errorMessage": ansi_to_tokens("Execution timed out")
                 }
             elif run_proc.returncode != 0:
                 result = {
-                    "kind": "runtime_error",
-                    "value": run_proc.stderr.strip()
+                    "errorType": "runtime-error",
+                    "errorMessage": run_proc.stderr.strip()
                 }
             else:
                 if problem.get("UB", False):
                     result = {
-                        "kind": "undefined_behavior",
-                        "value": None
+                        "errorType": "undefined-behavior",
                     }
                 else:
                     clean_stdout = strip_runner_line(
                         run_proc.stdout, pid
                     )
                     result = {
-                        "kind": "stdout",
-                        "value": clean_stdout
+                        "errorType": "no-error",
+                        "stdout": clean_stdout
                     }
 
         generated_problem = dict(problem)
         generated_problem["result"] = result
+        generated_problem["code"] = (PROBLEMS_SRC / f"{problem["id"]}.cpp").read_text()
         generated.append(generated_problem)
 
     OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)

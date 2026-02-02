@@ -127,3 +127,34 @@
     @apply cursor-pointer;
   }
 }
+
+/***********************************
+ * CODE BLOCKS STYLING USING SHIKI *
+ ***********************************/
+/* Dark mode styles for Shiki syntax highlighting */
+html.dark pre.shiki,
+html.dark pre.shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+/* Each line */
+pre.shiki .line {
+  @apply relative min-h-3 px-5 pl-14 text-xs whitespace-pre sm:min-h-3.5 sm:text-sm md:min-h-6 md:text-base;
+}
+pre.shiki .line > span {
+  @apply bg-transparent! text-wrap;
+}
+/* Line numbers */
+pre.shiki {
+  counter-reset: linenumber;
+  @apply p-1;
+}
+pre.shiki .line::before {
+  counter-increment: linenumber;
+  content: counter(linenumber);
+
+  @apply absolute top-0 left-0 flex h-full w-8 items-center justify-end pr-1 font-mono text-sm text-slate-400 select-none;
+}

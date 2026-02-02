@@ -6,3 +6,4 @@ export * from "./Switch";
 export * from "./RadioGroup";
 export * from "./Select";
 export * from "./Slider";
+export * from "./Textarea";
