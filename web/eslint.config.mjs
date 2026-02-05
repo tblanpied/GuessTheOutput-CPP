@@ -1,90 +1,70 @@
 // eslint.config.mjs
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-// Import plugins
-import securityPlugin from "eslint-plugin-security";
-import unusedImportsPlugin from "eslint-plugin-unused-imports";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
+import globals from "globals";
+import sonarjs from "eslint-plugin-sonarjs";
+import security from "eslint-plugin-security";
 import importPlugin from "eslint-plugin-import";
-import promisePlugin from "eslint-plugin-promise";
-import sonarjsPlugin from "eslint-plugin-sonarjs";
+import nextTs from "eslint-config-next/typescript";
+import prettier from "eslint-config-prettier/flat";
+import unusedImports from "eslint-plugin-unused-imports";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import { defineConfig, globalIgnores } from "eslint/config";
+import prettierPluginRecommended from "eslint-plugin-prettier/recommended";
 
-// Prettier integration
-import eslintConfigPrettier from "eslint-config-prettier/flat";
-import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+export default defineConfig([
+  // Next.js recommended rule sets (flat config arrays)
+  ...nextVitals,
+  ...nextTs,
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+  // Make ESLint + Prettier cooperate
+  prettier,
+  prettierPluginRecommended,
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+  // Override default ignores (Next documents these defaults)
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]), // [page:1]
 
-const eslintConfig = [
-  // Base Next.js + TypeScript rules
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-
-  // Your custom plugins and rules
+  // Your project-wide quality rules
   {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
     plugins: {
-      security: securityPlugin,
-      "unused-imports": unusedImportsPlugin,
-      "react-hooks": reactHooksPlugin,
+      "unused-imports": unusedImports,
       import: importPlugin,
-      promise: promisePlugin,
-      sonarjs: sonarjsPlugin,
+      sonarjs,
+      security,
     },
     rules: {
-      // Enforce Prettier formatting
-      "prettier/prettier": "error",
+      // Security / bug patterns
+      ...(security.configs?.recommended?.rules ?? {}),
+      ...(sonarjs.configs?.recommended?.rules ?? {}),
 
-      // Security rules
-      "security/detect-object-injection": "warn",
-      "security/detect-non-literal-fs-filename": "error",
-      "security/detect-eval-with-expression": "error",
-      "security/detect-unsafe-regex": "warn",
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+      eqeqeq: ["error", "smart"],
 
-      // Performance & Clean Code
+      // Imports hygiene
+      "import/no-duplicates": "error",
+      "import/newline-after-import": "warn",
+
+      // Remove unused code reliably
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
-        { vars: "all", varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
       ],
-      "import/no-extraneous-dependencies": "warn",
-      "import/no-cycle": "error",
-      "import/no-unresolved": "error",
-
-      // React Hooks
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-
-      // Promises & async
-      "promise/no-return-wrap": "error",
-      "promise/param-names": "error",
-      "promise/catch-or-return": "warn",
-
-      // Complexity & Maintainability
-      "sonarjs/no-duplicate-string": "warn",
-      "sonarjs/no-identical-functions": "warn",
-      "sonarjs/cognitive-complexity": ["warn", 15],
-
-      // General Good Practices
-      eqeqeq: ["error", "always"],
-      "no-console": ["warn", { allow: ["warn", "error"] }],
-      "no-alert": "error",
-      "no-debugger": "error",
-      "prefer-const": "error",
-      "no-var": "error",
+      // Disable core unused-vars (we delegate to unused-imports)
+      "no-unused-vars": "off",
     },
   },
-
-  // Prettier plugin (runs Prettier as ESLint rule)
-  eslintPluginPrettierRecommended,
-
-  // Turn off rules that conflict with Prettier
-  eslintConfigPrettier,
-];
-
-export default eslintConfig;
+]);

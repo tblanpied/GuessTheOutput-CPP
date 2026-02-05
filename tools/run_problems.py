@@ -9,7 +9,8 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROBLEMS_JSON = ROOT / "problems" / "problems.json"
 PROBLEMS_SRC = ROOT / "problems" / "src"
-OUTPUT_JSON = ROOT / "data" / "problems.generated.json"
+OUTPUT_JSON = ROOT / "web" / "data" / "problems.generated.json"
+OUTPUT_JSON_INDEX = ROOT / "web" / "data" / "problems.index.json"
 
 MAKE_CMD = ["make"]
 TIMEOUT = 2  # seconds
@@ -103,6 +104,7 @@ def main():
         problems = json.load(f)
 
     generated = []
+    problem_index = []
 
     for problem in problems:
         pid = problem["id"]
@@ -163,12 +165,19 @@ def main():
         generated_problem["result"] = result
         generated_problem["code"] = (PROBLEMS_SRC / f"{problem["id"]}.cpp").read_text()
         generated.append(generated_problem)
+        problem_index.append({
+            "id": generated_problem["id"],
+            "difficulty": generated_problem["difficulty"],
+            "concepts": generated_problem["concepts"]
+        })
 
     OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(generated, f, indent=2)
+    with open(OUTPUT_JSON_INDEX, "w", encoding="utf-8") as f:
+        json.dump(problem_index, f, indent=2)
 
-    print(f"\n✔ Generated {OUTPUT_JSON}")
+    print(f"\n✔ Generated {OUTPUT_JSON}, {OUTPUT_JSON_INDEX}")
 
 
 if __name__ == "__main__":

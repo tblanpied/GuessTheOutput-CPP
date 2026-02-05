@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { ErrorMessage, ErrorMessageColor, ErrorMessageStyle } from "@/lib/problems";
 
 interface ErrorMessageViewProps {
-  message: ErrorMessage;
+  message?: ErrorMessage;
   className?: string;
 }
 
@@ -21,6 +21,9 @@ const styleClass: Record<ErrorMessageStyle, string> = {
 };
 
 export function ErrorMessageView({ message, className }: ErrorMessageViewProps) {
+  if (!message || message.length === 0) {
+    return <div className="text-muted-foreground text-sm italic">No error details available.</div>;
+  }
   return (
     <div
       className={cn(

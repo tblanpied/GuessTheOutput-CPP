@@ -11,6 +11,7 @@ const ThemeSwitch = () => {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, theme, setTheme } = useTheme();
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const isDark = useMemo(

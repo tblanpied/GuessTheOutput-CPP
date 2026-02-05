@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getProblem, loadProblemsById } from "@/lib/problems";
 
 import CodeHighlight from "@/components/sections/problem/CodeHighlight";
-import ProblemInterface from "@/components/sections/problem/ProblemInterface";
+import ProblemWorkspace from "@/components/sections/problem/ProblemWorkspace";
 
 export const dynamicParams = false; // only the IDs we generate exist
 
@@ -22,7 +22,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ id: st
     <main
       className="flex min-h-[calc(100vh-48px)] flex-col items-center justify-start overflow-x-clip"
     >
-      <ProblemInterface
+      <ProblemWorkspace
         code={<CodeHighlight code={problem.code} />}
         problem={problem}
       />

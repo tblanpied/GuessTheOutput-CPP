@@ -1,3 +1,5 @@
+export const PROBLEM_MIN_DIFFICULTY = 1;
+export const PROBLEM_MAX_DIFFICULTY = 5;
 export type Difficulty = 1 | 2 | 3 | 4 | 5;
 
 export function clampDifficulty(n: number): Difficulty {
@@ -5,8 +7,8 @@ export function clampDifficulty(n: number): Difficulty {
   return v as Difficulty;
 }
 
-export type ProblemTimer = "off" | "30s" | "60s" | "120s";
-export type SessionTimer = "off" | "10m" | "20m";
+export type ProblemTimer = number | null;
+export type SessionTimer = number | null;
 export type ProblemOrder = "random" | "progressive";
 
 export type TrainingConfig = {
@@ -31,8 +33,8 @@ export const defaultTrainingConfig: TrainingConfig = {
   maxAttemptsPerProblem: 3,
   concepts: [],
   problemsPerSession: null,
-  problemTimer: "off",
-  sessionTimer: "off",
+  problemTimer: null,
+  sessionTimer: null,
   problemOrder: "random",
   showOutputDifference: true,
 };
@@ -55,8 +57,8 @@ export const presets: Array<{
       difficultyMax: 3,
       problemsPerSession: 10,
       maxAttemptsPerProblem: 3,
-      problemTimer: "off",
-      sessionTimer: "off",
+      problemTimer: null,
+      sessionTimer: null,
       problemOrder: "random",
       showOutputDifference: true,
       concepts: [],
@@ -70,8 +72,8 @@ export const presets: Array<{
       difficultyMax: 4,
       problemsPerSession: 15,
       maxAttemptsPerProblem: 1,
-      problemTimer: "60s",
-      sessionTimer: "off",
+      problemTimer: 60,
+      sessionTimer: null,
       problemOrder: "random",
       showOutputDifference: true,
     },
@@ -84,8 +86,8 @@ export const presets: Array<{
       difficultyMax: 5,
       problemsPerSession: 20,
       maxAttemptsPerProblem: 2,
-      problemTimer: "off",
-      sessionTimer: "off",
+      problemTimer: null,
+      sessionTimer: null,
       problemOrder: "progressive",
       showOutputDifference: true,
     },
@@ -96,8 +98,8 @@ export const presets: Array<{
     config: {
       problemsPerSession: null,
       maxAttemptsPerProblem: null,
-      problemTimer: "off",
-      sessionTimer: "off",
+      problemTimer: null,
+      sessionTimer: null,
       problemOrder: "random",
       showOutputDifference: true,
     },

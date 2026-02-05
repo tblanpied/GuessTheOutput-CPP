@@ -6,13 +6,15 @@ import { InfinityIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
+  PROBLEM_MAX_DIFFICULTY,
+  PROBLEM_MIN_DIFFICULTY,
   ProblemOrder,
   ProblemTimer,
   SessionTimer,
   TrainingConfig,
   clampDifficulty,
   presets,
-} from "@/lib/config";
+} from "@/lib/training/config";
 
 import { Separator } from "@/components/ui/utils";
 import {
@@ -41,11 +43,6 @@ import {
   NumericStepper,
   RadioGroup,
   RadioGroupItem,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Slider,
   Switch,
 } from "@/components/ui/inputs";
@@ -63,14 +60,14 @@ export function TrainingPresetPanel({
 }: TrainingPresetPanelProps) {
   // Core
   const [difficultyRange, setDifficultyRange] = useState<[number, number]>([
-    defaultConfig?.difficultyMin ?? 2,
-    defaultConfig?.difficultyMax ?? 4,
+    defaultConfig?.difficultyMin ?? PROBLEM_MIN_DIFFICULTY,
+    defaultConfig?.difficultyMax ?? PROBLEM_MAX_DIFFICULTY,
   ]);
 
   const [attemptsInfinite, setAttemptsInfinite] = useState(
     defaultConfig?.maxAttemptsPerProblem === null ? true : false
   );
-  const [maxAttempts, setMaxAttempts] = useState<number>(defaultConfig?.maxAttemptsPerProblem ?? 2);
+  const [maxAttempts, setMaxAttempts] = useState<number>(defaultConfig?.maxAttemptsPerProblem ?? 1);
 
   const [concepts, setConcepts] = useState<string[]>(defaultConfig?.concepts ?? []);
 
@@ -81,10 +78,10 @@ export function TrainingPresetPanel({
   );
 
   const [problemTimer, setProblemTimer] = useState<ProblemTimer>(
-    defaultConfig?.problemTimer ?? "off"
+    defaultConfig?.problemTimer ?? null
   );
   const [sessionTimer, setSessionTimer] = useState<SessionTimer>(
-    defaultConfig?.sessionTimer ?? "off"
+    defaultConfig?.sessionTimer ?? null
   );
 
   const [problemOrder, setProblemOrder] = useState<ProblemOrder>(
@@ -95,37 +92,59 @@ export function TrainingPresetPanel({
   const difficultyMin = clampDifficulty(Math.min(difficultyRange[0], difficultyRange[1]));
   const difficultyMax = clampDifficulty(Math.max(difficultyRange[0], difficultyRange[1]));
 
-  const applyPreset = (preset: Partial<TrainingConfig>) => {
-    if (preset.difficultyMin !== undefined || preset.difficultyMax !== undefined) {
-      setDifficultyRange([
-        preset.difficultyMin ?? difficultyMin,
-        preset.difficultyMax ?? difficultyMax,
-      ]);
-    }
+  const applyDifficultyPreset = (preset: Partial<TrainingConfig>) => {
+    const hasMin = preset.difficultyMin !== undefined;
+    const hasMax = preset.difficultyMax !== undefined;
+    if (!hasMin && !hasMax) return;
 
-    if (preset.maxAttemptsPerProblem !== undefined) {
-      setAttemptsInfinite(preset.maxAttemptsPerProblem === null);
-      if (preset.maxAttemptsPerProblem !== null) setMaxAttempts(preset.maxAttemptsPerProblem);
-    }
+    setDifficultyRange([
+      preset.difficultyMin ?? difficultyMin,
+      preset.difficultyMax ?? difficultyMax,
+    ]);
+  };
 
+  const applyAttemptsPreset = (preset: Partial<TrainingConfig>) => {
+    if (preset.maxAttemptsPerProblem === undefined) return;
+
+    setAttemptsInfinite(preset.maxAttemptsPerProblem === null);
+    if (preset.maxAttemptsPerProblem !== null) setMaxAttempts(preset.maxAttemptsPerProblem);
+  };
+
+  const applyConceptsPreset = (preset: Partial<TrainingConfig>) => {
     if (preset.concepts !== undefined) setConcepts(preset.concepts);
+  };
 
-    if (preset.problemsPerSession !== undefined) {
-      setEndless(preset.problemsPerSession === null);
-      if (preset.problemsPerSession !== null) setProblemsPerSession(preset.problemsPerSession);
-    }
+  const applySessionSizePreset = (preset: Partial<TrainingConfig>) => {
+    if (preset.problemsPerSession === undefined) return;
 
+    setEndless(preset.problemsPerSession === null);
+    if (preset.problemsPerSession !== null) setProblemsPerSession(preset.problemsPerSession);
+  };
+
+  const applyTimersPreset = (preset: Partial<TrainingConfig>) => {
     if (preset.problemTimer !== undefined) {
       setProblemTimer(preset.problemTimer);
-      if (preset.problemTimer !== "off") setSessionTimer("off");
-    }
-    if (preset.sessionTimer !== undefined) {
-      setSessionTimer(preset.sessionTimer);
-      if (preset.sessionTimer !== "off") setProblemTimer("off");
+      if (preset.problemTimer !== null) setSessionTimer(null);
     }
 
+    if (preset.sessionTimer !== undefined) {
+      setSessionTimer(preset.sessionTimer);
+      if (preset.sessionTimer !== null) setProblemTimer(null);
+    }
+  };
+
+  const applyMiscPreset = (preset: Partial<TrainingConfig>) => {
     if (preset.problemOrder !== undefined) setProblemOrder(preset.problemOrder);
     if (preset.showOutputDifference !== undefined) setShowDiff(preset.showOutputDifference);
+  };
+
+  const applyPreset = (preset: Partial<TrainingConfig>) => {
+    applyDifficultyPreset(preset);
+    applyAttemptsPreset(preset);
+    applyConceptsPreset(preset);
+    applySessionSizePreset(preset);
+    applyTimersPreset(preset);
+    applyMiscPreset(preset);
   };
 
   const buildConfig = (): TrainingConfig => ({
@@ -214,7 +233,7 @@ export function TrainingPresetPanel({
             </div>
 
             <NumericStepper
-              defaultValue={1}
+              value={problemsPerSession}
               onChange={setProblemsPerSession}
               min={1}
               max={200}
@@ -261,7 +280,7 @@ export function TrainingPresetPanel({
                   </div>
 
                   <NumericStepper
-                    defaultValue={1}
+                    value={maxAttempts}
                     onChange={setMaxAttempts}
                     min={1}
                     max={20}
@@ -279,6 +298,7 @@ export function TrainingPresetPanel({
                 <div className="space-y-2">
                   <Label>Concepts to train</Label>
                   <MultiSelectCombobox
+                    selected={concepts}
                     options={availableConcepts}
                     onChange={setConcepts}
                     placeholder="All concepts (no filter)"
@@ -287,52 +307,66 @@ export function TrainingPresetPanel({
                 </div>
 
                 {/* Time controls */}
+                {/* Problem timer */}
                 <div className="space-y-2">
-                  <Label>Problem timer</Label>
-                  <Select
-                    value={problemTimer}
-                    onValueChange={(v) => {
-                      const next = v as ProblemTimer;
-                      setProblemTimer(next);
-                      if (next !== "off") setSessionTimer("off");
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="off">Off</SelectItem>
-                      <SelectItem value="30s">30 seconds</SelectItem>
-                      <SelectItem value="60s">60 seconds</SelectItem>
-                      <SelectItem value="120s">120 seconds</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between gap-3">
+                    <Label>Problem timer</Label>
+                    <Switch
+                      checked={problemTimer !== null}
+                      onCheckedChange={(checked) => {
+                        setProblemTimer(checked ? 0 : null);
+                        if (checked) {
+                          setSessionTimer(null);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <NumericStepper
+                      value={problemTimer || 0}
+                      onChange={(v) => setProblemTimer(v)}
+                      min={0}
+                      max={600}
+                      step={10}
+                      disabled={problemTimer === null}
+                    />
+                    <span className="text-muted-foreground text-sm">seconds</span>
+                  </div>
+
                   <p className="text-muted-foreground text-xs">
-                    If enabled, whole-session timer will be turned off.
+                    When enabled, the whole-session timer is automatically turned off.
                   </p>
                 </div>
 
+                {/* Whole-session timer */}
                 <div className="space-y-2">
-                  <Label>Whole-session timer</Label>
-                  <Select
-                    value={sessionTimer}
-                    onValueChange={(v) => {
-                      const next = v as SessionTimer;
-                      setSessionTimer(next);
-                      if (next !== "off") setProblemTimer("off");
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="off">Off</SelectItem>
-                      <SelectItem value="10m">10 minutes</SelectItem>
-                      <SelectItem value="20m">20 minutes</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between gap-3">
+                    <Label>Whole-session timer</Label>
+                    <Switch
+                      checked={sessionTimer !== null}
+                      onCheckedChange={(checked) => {
+                        setSessionTimer(checked ? 0 : null);
+                        if (checked) {
+                          setProblemTimer(null);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <NumericStepper
+                      value={sessionTimer || 0}
+                      onChange={(v) => setSessionTimer(v)}
+                      min={0}
+                      max={3600}
+                      step={30}
+                      disabled={sessionTimer === null}
+                    />
+                    <span className="text-muted-foreground text-sm">seconds</span>
+                  </div>
                   <p className="text-muted-foreground text-xs">
-                    If enabled, problem timer will be turned off.
+                    When enabled, the problem timer is automatically turned off.
                   </p>
                 </div>
 
@@ -398,7 +432,7 @@ export function TrainingPresetPanel({
           Ready when you are.
           <span className="ml-2">
             <Badge variant="outline">
-              Difficulty {difficultyMin}–{difficultyMax}
+              Difficulty {difficultyMin}-{difficultyMax}
             </Badge>
           </span>
         </div>

@@ -29,30 +29,6 @@ export interface ProblemCodePanelProps extends React.ComponentProps<"section"> {
   description?: string;
 }
 
-function _DifficultyPill({ difficulty }: { difficulty: number }) {
-  const label = `Difficulty ${difficulty}/5`;
-
-  // Simple, readable ramp.
-  const color =
-    difficulty <= 2
-      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-      : difficulty === 3
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-        : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300";
-
-  return (
-    <div
-      className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs", color)}
-    >
-      <Gauge
-        className="h-3.5 w-3.5"
-        aria-hidden="true"
-      />
-      <span className="font-medium">{label}</span>
-    </div>
-  );
-}
-
 export default function ProblemCodePanel({
   className,
   children,
@@ -64,6 +40,16 @@ export default function ProblemCodePanel({
   ...props
 }: ProblemCodePanelProps) {
   const hasMeta = revealMeta && (title || (concepts && concepts.length > 0));
+
+  const difficultyColor = React.useMemo(() => {
+    if (difficulty <= 2) {
+      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+    } else if (difficulty === 3) {
+      return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+    } else {
+      return "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300";
+    }
+  }, [difficulty]);
 
   return (
     <section
@@ -81,7 +67,9 @@ export default function ProblemCodePanel({
           <p className="text-muted-foreground mt-1 text-sm leading-6">{description}</p>
         </div>
 
-        <_DifficultyPill difficulty={difficulty} />
+        <Badge className={difficultyColor}>
+          <Gauge /> Difficulty {difficulty}/5
+        </Badge>
       </header>
 
       {/* Revealed metadata */}

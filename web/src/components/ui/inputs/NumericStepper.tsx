@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-
 import { Input } from "./Input";
 import { Button } from "./Button";
 
 const NumericStepper = ({
-  defaultValue,
+  value,
   onChange,
   min = 1,
   max = 999,
@@ -14,7 +12,7 @@ const NumericStepper = ({
   disabled,
   ariaLabel,
 }: {
-  defaultValue?: number;
+  value: number;
   onChange: (next: number) => void;
   min?: number;
   max?: number;
@@ -22,10 +20,7 @@ const NumericStepper = ({
   disabled?: boolean;
   ariaLabel?: string;
 }) => {
-  const [value, setValue] = useState(defaultValue || min);
-
   const handleChange = (next: number) => {
-    setValue(next);
     onChange(next);
   };
 

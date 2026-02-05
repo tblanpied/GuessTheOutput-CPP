@@ -24,7 +24,7 @@ export type DiffCharToken = {
 };
 
 export interface DiffTextProps {
-  /** The text you want to render (e.g. user output, expected output, stdin). */
+  /** The text to render (e.g. user output, expected output, stdin). */
   text: string;
 
   /**
@@ -44,7 +44,7 @@ export interface DiffTextProps {
 
 /**
  * Build a per-character token list.
- * Uses Array.from to iterate code points (works better with unicode than `split("")`).
+ * Uses Array.from to iterate code points.
  */
 export function tokenizeDiff(text: string, compareTo?: string): DiffCharToken[] {
   const source = Array.from(text);
@@ -55,7 +55,7 @@ export function tokenizeDiff(text: string, compareTo?: string): DiffCharToken[] 
 
     let status: DiffCharStatus = "neutral";
     if (target) {
-      status = index < target.length && char === target[index] ? "match" : "mismatch";
+      status = index < target.length && char === target[index as number] ? "match" : "mismatch";
     }
 
     return { char, status, isWhitespace };
@@ -66,7 +66,7 @@ function tokenClassName(token: DiffCharToken) {
   // Correctness has priority; otherwise whitespace is muted.
   if (token.status === "match") return "text-emerald-500";
   if (token.status === "mismatch") return "text-red-500";
-  if (token.isWhitespace) return "text-muted-foreground/60";
+  if (token.isWhitespace) return "dark:text-muted-foreground/60 text-muted-foreground";
   return "text-foreground/90";
 }
 
@@ -147,18 +147,5 @@ export function DiffText({ text, compareTo, showWhitespace = true, className }: 
     >
       {parts}
     </pre>
-  );
-}
-
-/**
- * Backward-compatible convenience wrapper for your previous usage.
- * (Consider deleting once you migrate all call sites.)
- */
-export function IO({ str, diffStr = "" }: { str: string; diffStr?: string }) {
-  return (
-    <DiffText
-      text={str}
-      compareTo={diffStr}
-    />
   );
 }

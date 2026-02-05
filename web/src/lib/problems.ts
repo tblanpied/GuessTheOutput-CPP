@@ -1,6 +1,8 @@
 import path from "path";
 import { promises as fs } from "fs";
 
+import { safeParse } from "./utils";
+
 export type ErrorType = "no-error" | "runtime-error" | "compilation-error" | "undefined-behavior";
 
 export type ErrorMessageColor = "default" | "red" | "yellow" | "cyan" | "green";
@@ -35,9 +37,11 @@ export type ProblemData = {
 };
 
 export async function loadProblems(): Promise<ProblemData[]> {
-  const filePath = path.join(process.cwd(), "..", "data", "problems.generated.json");
+  const filePath = path.join(process.cwd(), "data", "problems.generated.json");
   const raw = await fs.readFile(filePath, "utf8");
-  return JSON.parse(raw) as ProblemData[];
+  const json = safeParse(raw);
+  if (!json) return [];
+  return json as ProblemData[];
 }
 
 let problemsByIdPromise: Promise<Map<string, ProblemData>> | null = null;

@@ -11,7 +11,7 @@ interface SwitchProps extends React.ComponentProps<typeof SwitchPrimitive.Root> 
   thumbIcon?: React.ReactNode;
 }
 
-function Switch({ className, size = "default", thumbIcon, children, ...props }: SwitchProps) {
+function Switch({ className, size = "default", thumbIcon, ...props }: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"

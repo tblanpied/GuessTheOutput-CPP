@@ -1,7 +1,7 @@
 // prettier.config.mjs
 
 /** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
-export default {
+const prettierConfig = {
   // Maximum line length for readability (soft wrap)
   printWidth: 100,
 
@@ -89,3 +89,5 @@ export default {
     "prettier-plugin-merge",
   ],
 };
+
+export default prettierConfig;

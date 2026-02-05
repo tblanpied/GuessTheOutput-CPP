@@ -2,25 +2,26 @@
 
 import { useState } from "react";
 
-import { X } from "lucide-react";
-import { Check } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/data_display/Badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/utils";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/utils";
 
 import { Button } from "./Button";
 
 const MultiSelectCombobox = ({
+  selected,
   options,
   onChange,
   placeholder = "Select…",
@@ -28,6 +29,7 @@ const MultiSelectCombobox = ({
   emptyText = "No matches.",
   className,
 }: {
+  selected: string[];
   options: string[];
   onChange: (next: string[]) => void;
   placeholder?: string;
@@ -36,19 +38,13 @@ const MultiSelectCombobox = ({
   className?: string;
 }) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const handleChange = (next: string[]) => {
-    setSelected(next);
-    onChange(next);
-  };
 
   const toggle = (value: string) => {
-    if (selected.includes(value)) handleChange(selected.filter((v) => v !== value));
-    else handleChange([...selected, value]);
+    if (selected.includes(value)) onChange(selected.filter((v) => v !== value));
+    else onChange([...selected, value]);
   };
 
-  const clear = () => handleChange([]);
+  const clear = () => onChange([]);
   return (
     <div className={cn("space-y-2", className)}>
       <Popover
@@ -71,7 +67,7 @@ const MultiSelectCombobox = ({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[--radix-popover-trigger-width] p-0"
+          className="max-h-72 w-[--radix-popover-trigger-width] overflow-y-auto p-0"
           align="start"
         >
           <Command>
