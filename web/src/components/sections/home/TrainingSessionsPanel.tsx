@@ -22,7 +22,6 @@ import {
   deleteTrainingSession,
   getActiveTrainingSessionId,
   getConcepts,
-  getCurrentProblemId,
   getDifficultyRange,
   getSessionCounts,
   listTrainingSessions,
@@ -77,9 +76,7 @@ export function TrainingSessionsPanel({
       resumeTrainingSession(id);
       setActiveTrainingSession(id);
 
-      const currentId = getCurrentProblemId(id);
-      if (currentId) router.push(`/problems/${currentId}`);
-      else router.push("/");
+      router.push(`/training`);
     },
     [router]
   );

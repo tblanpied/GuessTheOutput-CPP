@@ -12,7 +12,6 @@ import { updateTrainingSessionTimers } from "@/lib/training/timers";
 import {
   getActiveTrainingSessionId,
   getCurrentProblemId,
-  getNextProblemId,
   getSessionCounts,
   markSessionCompleted,
   recordAttempt,
@@ -42,11 +41,10 @@ export type SubmissionEvaluation = {
   submission?: UserSubmission; // to show the user answer
 };
 
-export interface ProblemWorkspaceProps {
-  /** Server-rendered slot for highlighted code (Shiki) */
-  code: React.ReactNode;
+export type ProblemsById = Record<string, ProblemData & { codeBlock: React.ReactNode }>;
 
-  problem: ProblemData;
+export interface ProblemWorkspaceProps {
+  problemsById: ProblemsById;
 
   /** Optional: parent can override what happens at end-of-session */
   onSessionComplete?: () => void;
@@ -81,8 +79,7 @@ function WorkspaceHeader({ phase }: { phase: ProblemPhase }) {
 }
 
 export default function ProblemWorkspace({
-  code,
-  problem,
+  problemsById,
   className,
   onSessionComplete,
 }: ProblemWorkspaceProps) {
@@ -95,23 +92,21 @@ export default function ProblemWorkspace({
   // Read active session id only on the client.
   const session = useTrainingSession(getActiveTrainingSessionId());
 
+  const [problemId, setProblemId] = React.useState<string | null>(() => {
+    return getCurrentProblemId(session);
+  });
+  const problem = problemId ? problemsById[problemId as string] : null;
+
+  React.useEffect(() => {
+    if (!problem) {
+      router.push("/");
+    }
+  }, [problem, router]);
+
   const revealMeta = phase === "reviewing";
 
   const { total, index, remaining } = getSessionCounts(session);
   const progress = total > 0 ? Math.round((index / total) * 100) : 0;
-
-  React.useEffect(() => {
-    if (!session) return;
-
-    if (phase !== "answering") return;
-
-    const currentProblemId = getCurrentProblemId(session);
-    if (!currentProblemId) return;
-
-    if (problem.id !== currentProblemId) {
-      router.replace(`/problems/${currentProblemId}`);
-    }
-  }, [router, session, problem.id, phase]);
 
   const handleSubmit = React.useCallback(
     (nextEval: SubmissionEvaluation) => {
@@ -126,15 +121,9 @@ export default function ProblemWorkspace({
 
       if (finishedProblem) {
         setPhase("reviewing");
-
-        // prefetch the next problem for snappier transitions.
-        const nextId = getNextProblemId(session);
-        if (nextId && nextId !== problem.id) {
-          router.prefetch(`/problems/${nextId}`);
-        }
       }
     },
-    [session, problem.id, router]
+    [session, router]
   );
 
   const handleRetry = React.useCallback(() => {
@@ -142,11 +131,10 @@ export default function ProblemWorkspace({
     setEvaluation({ success: false, summary: "" });
     if (!session) return;
     const nextProblemId = retryLastProblem(session.meta.id);
-    if (nextProblemId) {
-      router.replace(`/problems/${nextProblemId}`);
-    } else {
+    if (!nextProblemId) {
       router.push("/");
     }
+    setProblemId(nextProblemId);
   }, [session, router]);
 
   const handleNext = React.useCallback(() => {
@@ -164,11 +152,10 @@ export default function ProblemWorkspace({
       return;
     }
 
-    // Safety: avoid pushing the same route.
-    if (nextId === problem.id) return;
-
-    router.replace(`/problems/${nextId}`);
-  }, [session, onSessionComplete, problem.id, router]);
+    setPhase("answering");
+    setEvaluation({ success: false, summary: "" });
+    setProblemId(nextId);
+  }, [session, onSessionComplete, router]);
 
   const handeTimerUpdate = React.useCallback(() => {
     if (!session || phase !== "answering") return;
@@ -223,12 +210,12 @@ export default function ProblemWorkspace({
         <div className="min-w-0 p-4">
           <CodeBlockPanel
             className="border-0 bg-transparent p-0"
-            title={problem.title}
-            concepts={problem.concepts}
-            difficulty={problem.difficulty}
+            title={problem?.title}
+            concepts={problem?.concepts}
+            difficulty={problem?.difficulty}
             revealMeta={revealMeta}
           >
-            {code}
+            {problem?.codeBlock}
           </CodeBlockPanel>
         </div>
 
@@ -240,21 +227,23 @@ export default function ProblemWorkspace({
               maxAttempts={session?.config.maxAttemptsPerProblem || null}
               currentAttempts={session?.progress.attemptsOnCurrent || 0}
               showOutputHints={session?.config.showOutputDifference}
-              stdin={problem.stdin}
-              expectedStdout={problem.result.stdout}
-              expectedErrorType={problem.result.errorType}
+              stdin={problem?.stdin}
+              expectedStdout={problem?.result.stdout}
+              expectedErrorType={problem?.result.errorType}
               onSubmit={handleSubmit}
             />
           ) : (
-            <ProblemResultPanel
-              className="h-full border-0 bg-transparent p-0"
-              explanationMarkdown={problem.explanation}
-              evaluation={evaluation}
-              stdin={problem.stdin}
-              expectedResult={problem.result}
-              onRetry={handleRetry}
-              onNext={handleNext}
-            />
+            problem && (
+              <ProblemResultPanel
+                className="h-full border-0 bg-transparent p-0"
+                explanationMarkdown={problem.explanation}
+                evaluation={evaluation}
+                stdin={problem.stdin}
+                expectedResult={problem.result}
+                onRetry={handleRetry}
+                onNext={handleNext}
+              />
+            )
           )}
         </div>
       </div>

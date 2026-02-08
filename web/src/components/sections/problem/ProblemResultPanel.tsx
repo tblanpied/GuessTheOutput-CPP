@@ -2,8 +2,6 @@
 
 import * as React from "react";
 
-import remarkGfm from "remark-gfm";
-import ReactMarkdown from "react-markdown";
 import {
   AlertTriangle,
   ArrowRight,
@@ -24,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/feedback";
 
 import { ErrorMessageView } from "./ErrorMessageView";
 import { SubmissionEvaluation } from "./ProblemWorkspace";
+import { ExplanationMarkdown } from "./ExplanationMarkdown";
 
 export interface ProblemResultPanelProps {
   className?: string;
@@ -238,40 +237,7 @@ export default function ProblemResultPanel({
           icon={Info}
           title="Explanation"
         />
-        <div className="prose prose-zinc dark:prose-invert max-w-none text-sm">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              p: (props) => (
-                <p
-                  className="text-muted-foreground leading-6"
-                  {...props}
-                />
-              ),
-              code: ({ className, children, ...props }) => (
-                <code
-                  className={cn("bg-card rounded px-1.5 py-0.5 font-mono text-[0.9em]", className)}
-                  {...props}
-                >
-                  {children}
-                </code>
-              ),
-              pre: ({ children, ...props }) => (
-                <pre
-                  className={cn(
-                    `border-border bg-background/60 my-3 overflow-auto rounded-md border p-3
-                    font-mono text-sm leading-6`
-                  )}
-                  {...props}
-                >
-                  {children}
-                </pre>
-              ),
-            }}
-          >
-            {explanationMarkdown}
-          </ReactMarkdown>
-        </div>
+        <ExplanationMarkdown markdown={explanationMarkdown} />
       </div>
 
       {/* Actions */}

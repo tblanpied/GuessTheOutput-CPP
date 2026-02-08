@@ -68,7 +68,9 @@ export function subscribeStore(listener: () => void): () => void {
 export function updateStore(updater: (prev: TrainingStore) => TrainingStore): TrainingStore {
   const prev = loadStore();
   const next = updater(prev);
-  saveStore(next);
+  if (next !== prev) {
+    saveStore(next);
+  }
   return next;
 }
 

@@ -5,8 +5,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { cn, intersects } from "@/lib/utils";
+import { createTrainingSession } from "@/lib/training";
 import type { ProblemDifficulty } from "@/lib/problems";
-import { createTrainingSession, getCurrentProblemId } from "@/lib/training";
 import { type TrainingConfig, defaultTrainingConfig } from "@/lib/training/config";
 
 import { TrainingPresetPanel } from "./TrainingPresetPanel";
@@ -68,16 +68,14 @@ export default function HomeSection({ problemIndex }: HomeSectionProps) {
 
       if (subsetIds.length === 0) return;
 
-      const sessionId = createTrainingSession({
+      createTrainingSession({
         config,
         problemIds: subsetIds,
         activate: true,
         title: "Training session",
       });
 
-      const firstId = getCurrentProblemId(sessionId);
-
-      if (firstId) router.push(`/problems/${firstId}`);
+      router.push(`/training`);
     },
     [problemIndex, router]
   );

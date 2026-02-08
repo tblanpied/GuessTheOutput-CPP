@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/data_display";
  * `children` should be the highlighted code block (e.g. the server-rendered Shiki HTML).
  */
 export interface ProblemCodePanelProps extends React.ComponentProps<"section"> {
-  difficulty: ProblemDifficulty;
+  difficulty?: ProblemDifficulty;
 
   /**
    * Shown only after the result is known (so it don't spoil too much up-front).
@@ -42,7 +42,9 @@ export default function ProblemCodePanel({
   const hasMeta = revealMeta && (title || (concepts && concepts.length > 0));
 
   const difficultyColor = React.useMemo(() => {
-    if (difficulty <= 2) {
+    if (difficulty == null) {
+      return "";
+    } else if (difficulty <= 2) {
       return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
     } else if (difficulty === 3) {
       return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
@@ -67,9 +69,11 @@ export default function ProblemCodePanel({
           <p className="text-muted-foreground mt-1 text-sm leading-6">{description}</p>
         </div>
 
-        <Badge className={difficultyColor}>
-          <Gauge /> Difficulty {difficulty}/5
-        </Badge>
+        {difficulty && (
+          <Badge className={difficultyColor}>
+            <Gauge /> Difficulty {difficulty}/5
+          </Badge>
+        )}
       </header>
 
       {/* Revealed metadata */}
