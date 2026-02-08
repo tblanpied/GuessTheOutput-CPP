@@ -4,220 +4,220 @@
     "title": "Basic Hello World",
     "difficulty": 1,
     "concepts": ["main-function", "statements", "semicolons", "include"],
-    "explanation": "This is the canonical 'Hello world!' program. Every valid C++ program **must** have exactly one `main()` function. The `#include <iostream>` directive brings in the standard library for console I/O. Statements end with semicolons (`;`). The `return 0;` indicates successful program completion to the operating system."
+    "explanation": "This is the canonical “Hello world” style program: it defines `int main()` as the program’s entry point and writes text to standard output using `std::cout`.\n\n`#include <iostream>` makes the declarations for `std::cout` (and other I/O facilities) visible to the compiler.\n\nEach C++ statement ends with `;`, and `return 0;` signals successful termination to the operating system."
   },
   {
     "id": "p0002",
     "title": "Missing Semicolon",
-    "difficulty": 2,
+    "difficulty": 1,
     "concepts": ["syntax-error", "semicolons"],
-    "explanation": "**Syntax error**: Statements must end with a semicolon (`;`). The compiler expects a `;` after the `std::cout` expression but finds `return` instead. Clang reports the error on line 5; some compilers report line 6. **Key insight**: Check the line *before* the reported error line."
+    "explanation": "**Compilation error (syntax):** most statements must end with a semicolon.\n\nIf the `;` after a `std::cout << ...` statement is missing, the compiler keeps parsing and then encounters `return` where it still expects the statement to finish.\n\nA common debugging tip is to check the *previous* line when the compiler complains about an unexpected token."
   },
   {
     "id": "p0003",
     "title": "No main() Function",
     "difficulty": 2,
     "concepts": ["main-function", "linker-error"],
-    "explanation": "**Linker error**: Every executable C++ program **requires** exactly one `main()` function as the entry point. Without it, the linker cannot create an executable. `hello()` is just a regular function that never gets called."
+    "explanation": "**Linker error:** an executable C++ program needs exactly one `main()` function as its entry point.\n\nDefining some other function (like `hello()`) is not enough; unless it is named `main`, the runtime has no place to start.\n\nThis often compiles but fails at link time when building the final executable."
   },
   {
     "id": "p0004",
     "title": "Missing #include",
     "difficulty": 2,
     "concepts": ["preprocessor", "include"],
-    "explanation": "**Semantic error**: `std::cout` is declared in `<iostream>`. Without `#include <iostream>`, the compiler doesn't know what `std::cout` is. **Preprocessor directives** like `#include` must be at file scope (not inside functions)."
+    "explanation": "**Compilation error (name lookup/semantic):** `std::cout` is declared in the `<iostream>` header.\n\nIf you use `std::cout` without `#include <iostream>`, the compiler can’t find the name and reports it as “not declared” / “unknown identifier”.\n\n`#include` is a preprocessor directive and belongs at file scope (outside functions)."
   },
   {
     "id": "p0005",
     "title": "Missing Closing Brace",
-    "difficulty": 2,
+    "difficulty": 1,
     "concepts": ["braces", "compound-statement"],
-    "explanation": "**Syntax error**: Every `{` must have a matching `}`. Curly braces `{}` define **compound statements** (function bodies, blocks). The compiler reaches EOF without finding the closing brace for `main()`."
+    "explanation": "**Compilation error (syntax):** every opening `{` must have a matching closing `}`.\n\nBraces define blocks such as a function body, so if a `}` is missing the compiler reaches the end of the file while still “inside” `main()`.\n\nThe error is often reported near end-of-file even though the real mistake happened earlier."
   },
   {
     "id": "p0006",
     "title": "Duplicate main()",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["main-function", "multiple-definition"],
-    "explanation": "**Semantic error**: Exactly **one** `main()` function is allowed per program. Multiple definitions cause an error (\"multiple definition of `main`\"). Only the first `main()` would execute even if it somehow compiled."
+    "explanation": "**Compilation error (multiple definition):** a program may define `main()` only once.\n\nIf you write two `main()` functions, the compiler/toolchain reports a redefinition/multiple-definition error.\n\nFix: keep one `main()` and rename any other test function."
   },
   {
     "id": "p0007",
     "title": "Empty main()",
     "difficulty": 1,
     "concepts": ["main-function", "statements"],
-    "explanation": "Perfectly valid! An empty `main()` with no statements executes instantly and returns success to the OS. **Statements** are the basic unit of execution. No statements = nothing to execute."
+    "explanation": "An empty `main()` is still a valid program.\n\nIf execution reaches the end of `main()` without hitting a `return`, the program exits successfully (as if `return 0;` happened).\n\nThis shows that statements are optional: no statements means nothing gets executed."
   },
   {
     "id": "p0008",
     "title": "Missing Opening Brace",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["braces", "syntax-error"],
-    "explanation": "**Syntax error**: Function bodies require `{}` braces. Without the opening `{`, the compiler treats `std::cout` as a misplaced declaration, then chokes on `return 0;` outside any function scope."
+    "explanation": "**Compilation error (syntax):** a function definition needs a body enclosed in `{}`.\n\nIf the opening `{` after `main()` is missing, the following lines are parsed at file scope, where things like `return 0;` are not allowed.\n\nBraces are what turn a header like `int main()` into an actual function definition."
   },
   {
     "id": "p0010",
     "title": "Statement After return",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["statements", "control-flow"],
-    "explanation": "**Syntax error**: `return` immediately exits `main()`. The `std::cout` after `return 0` (even with missing `;`) is unreachable. Compilers flag this as a syntax error due to the malformed statement."
+    "explanation": "`return` ends the current function immediately; any statement after it is unreachable, which is usually only a warning.\n\nHowever, unreachable code is still *parsed* and must be well-formed.\n\nSo if the statement after `return` has a syntax problem (for example, a missing `;`), you still get a compile-time error."
   },
   {
     "id": "p0011",
     "title": "Multiple Statements",
     "difficulty": 1,
     "concepts": ["statements", "sequential-execution"],
-    "explanation": "**Statements execute sequentially** from top to bottom. Each `std::cout << ... << std::endl;` is a complete **expression statement**. `<<` is the output stream operator; `std::endl` adds `\\n` + flushes."
+    "explanation": "C++ executes statements in order, top to bottom, unless control flow changes.\n\nEach `std::cout << ...;` line is an expression statement that inserts text into the output stream.\n\n`std::endl` writes a newline and flushes the stream, while `\"\\n\"` only writes a newline character."
   },
   {
     "id": "p0012",
     "title": "Implicit main() Return",
     "difficulty": 2,
     "concepts": ["return-statement", "main-function"],
-    "explanation": "Valid! **C++17 and later**: `main()` implicitly returns `0` if no `return` statement is reached. Earlier standards required explicit `return 0;`. This is the only function with this special behavior."
+    "explanation": "Reaching the end of `main()` without a `return` is special in C++.\n\nIt is treated as if `return 0;` happened (successful exit), which is not generally true for other functions.\n\nMany style guides still recommend writing `return 0;` explicitly for clarity."
   },
   {
     "id": "p0013",
     "title": "Ignoring single-line comments",
     "difficulty": 1,
     "concepts": ["single-line comments", "cout", "ignored code"],
-    "explanation": "Text following `//` on a line is completely ignored by the compiler. Only the statements not commented out produce output."
+    "explanation": "`//` starts a single-line comment: everything from `//` to the end of that line is ignored by the compiler.\n\nOnly the parts of a line before `//` (and any other non-comment lines) can produce output.\n\nComments never run; they are ignored during compilation."
   },
   {
     "id": "p0014",
     "title": "Multi-line comment blocking out code",
-    "difficulty": 2,
+    "difficulty": 1,
     "concepts": ["multi-line comments", "commenting out code"],
-    "explanation": "The `/* ... */` syntax tells the compiler to ignore everything between them, including valid code, so only the final `std::cout` executes."
+    "explanation": "`/* ... */` is a block comment: the compiler ignores everything between the opening `/*` and the closing `*/`.\n\nThis can “comment out” multiple lines of code at once, even if those lines would otherwise compile.\n\nOnly code outside the comment contributes to the program’s output."
   },
   {
     "id": "p0015",
     "title": "Nested multi-line comments causing error",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["multi-line comments", "nesting", "syntax error"],
-    "explanation": "C++ does not allow nested multi-line comments. The first `*/` ends the comment, leaving stray code that leads to a syntax error during compilation."
+    "explanation": "C++ block comments do **not** nest.\n\nWhen the compiler sees the first `*/`, it ends the comment immediately, even if you intended it to close an inner comment.\n\nThe remaining text often contains stray `*/` or partially-commented code, which produces a compilation **syntax error**."
   },
   {
     "id": "p0016",
     "title": "Commenting out code temporarily",
     "difficulty": 1,
     "concepts": ["commenting out code", "single-line comments"],
-    "explanation": "Developers often use `//` to temporarily disable lines for debugging. The commented `cout` line does not run, so only the active one prints output."
+    "explanation": "Developers often use `//` to temporarily disable a line while debugging.\n\nA commented-out `std::cout` line is not compiled into the program, so it cannot run.\n\nOnly the remaining active output statement(s) affect stdout."
   },
   {
     "id": "p0017",
     "title": "Mixing single-line and multi-line comments",
     "difficulty": 2,
     "concepts": ["single-line comments", "multi-line comments"],
-    "explanation": "Both `//` and `/* ... */` comments can coexist. Only code outside comments is executed, so lines 1 and 4 print normally."
+    "explanation": "Single-line (`//`) and block (`/* ... */`) comments can appear in the same file.\n\nThe rule is simple: only tokens outside comments are compiled and executed.\n\nBe careful when using `/* ... */` in the middle of a statement, because it can remove essential parts of the code."
   },
   {
     "id": "p0018",
     "title": "Comments inside strings",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["string literals", "comments", "string boundaries"],
-    "explanation": "Comment symbols `//` and `/*` inside double-quoted strings are treated as literal characters, not comment starters. Only the `/*` outside the string starts a comment that cuts off the line."
+    "explanation": "Inside a string literal, characters like `//` or `/*` are just ordinary characters.\n\nA comment only starts when the lexer sees `//` or `/*` outside of a string literal.\n\nThis problem checks that you track quote boundaries correctly."
   },
   {
     "id": "p0019",
     "title": "Basic Integer Variable",
     "difficulty": 1,
     "concepts": ["variables", "definition", "int", "initialization"],
-    "explanation": "The variable `x` is defined and initialized with value `5`. `std::cout << x` prints `5` to stdout. This demonstrates basic variable definition, initialization, and output."
+    "explanation": "`int x = 5;` declares `x` and initializes it to a well-defined value.\n\nStreaming `x` into `std::cout` formats that integer as text and writes it to stdout.\n\nInitialization is important because using an uninitialized variable is undefined behavior."
   },
   {
     "id": "p0020",
     "title": "Uninitialized Variable",
-    "difficulty": 2,
+    "difficulty": 3,
     "concepts": ["variables", "uninitialized", "undefined-behavior"],
-    "explanation": "The variable `x` is defined but not initialized, so it contains garbage/indeterminate value. Printing it leads to **undefined behavior**, which may cause runtime issues or crashes in strict environments.",
+    "explanation": "A local variable like `int x;` is not automatically initialized.\n\nReading it (printing counts as reading) triggers **undefined behavior** because `x` has an indeterminate value.\n\nThe program might print a “random” number, print different values on different runs, or appear to work.\n\nFix: initialize it (`int x{};` or `int x = 0;`) before use.",
     "UB": true
   },
   {
     "id": "p0021",
     "title": "Multiple Variables Correct",
-    "difficulty": 2,
+    "difficulty": 1,
     "concepts": ["variables", "multiple-definition"],
-    "explanation": "**Correct syntax:** Multiple `int` variables can be defined in one statement separated by commas. `a` gets `1`, `b` gets `2`, printing `12`."
+    "explanation": "You can declare multiple variables of the same type in one declaration, separated by commas (e.g., `int a = 1, b = 2;`).\n\nEach variable gets its own initializer (if provided).\n\nIf you print them without spaces/newlines, their digits appear concatenated."
   },
   {
     "id": "p0022",
     "title": "Multiple Variables Wrong Type",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["variables", "syntax-error", "type-mismatch"],
-    "explanation": "**Syntax error:** Cannot mix types like `int` and `double` in the same definition statement. Each type needs its own statement."
+    "explanation": "**Compilation error (syntax):** a single declaration can only have one type.\n\nA form like `int a = 1, double b = 2.0;` is ill-formed because after `int` the compiler expects more *int declarators*, not a new type keyword.\n\nFix: split it into two declarations: `int a = 1;` and `double b = 2.0;`."
   },
   {
     "id": "p0023",
     "title": "Char Literal",
     "difficulty": 1,
     "concepts": ["char", "literals", "single-quotes"],
-    "explanation": "Character literals use **single quotes** `'A'`. The `char` variable `c` stores `'A'` (ASCII 65), which prints as `A`."
+    "explanation": "Character literals use single quotes, e.g. `'A'`.\n\nA `char` stores one character, and `std::cout << c;` prints that character.\n\nIf you instead cast to `int`, you would see the numeric character code."
   },
   {
     "id": "p0024",
     "title": "Unquoted Character",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["literals", "semantic-error", "quotes"],
-    "explanation": "**Semantic error:** Character literals require single quotes `'A'`. Without quotes, `A` is treated as an undeclared identifier, causing compilation failure."
+    "explanation": "**Compilation error:** without quotes, `A` is treated as an identifier, not a literal.\n\nIf there is no declared variable/function named `A`, name lookup fails and compilation stops.\n\nUse `'A'` for a `char` literal or `\"A\"` for a string literal."
   },
   {
     "id": "p0025",
     "title": "Multiple Type Declaration Error",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["variables", "syntax-error", "multiple-definition"],
-    "explanation": "**Syntax error:** Only one type specifier is allowed per declaration. `int a, int b;` repeats the type `int` for `b`, which is invalid syntax. Use `int a, b;` instead."
+    "explanation": "**Compilation error (syntax):** `int a, int b;` repeats the type keyword in the middle of the declaration.\n\nAfter `int a,` the grammar expects another declarator (like `b`), not another `int`.\n\nCorrect: `int a, b;` or use two separate lines."
   },
   {
     "id": "p0026",
     "title": "Double Quotes for Char",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": ["char", "literals", "semantic-error", "quotes"],
-    "explanation": "**Semantic error:** `char` values require **single quotes** `'A'` (one character). Double quotes `\"A\"` create a string literal (`const char[2]`), causing type mismatch."
+    "explanation": "**Compilation error (type mismatch):** `\"A\"` is a string literal (an array of characters including a terminating `\\0`), not a single character.\n\nA `char` can hold one character written with single quotes, like `'A'`.\n\nCompilers typically diagnose this as an invalid conversion from `const char*`/array to `char`."
   },
   {
     "id": "p0027",
     "title": "Single Quotes for String",
-    "difficulty": 2,
+    "difficulty": 3,
     "concepts": ["literals", "semantic-error", "quotes"],
-    "explanation": "**Semantic error:** String literals require **double quotes** `\"Hello\"`. Single quotes `'Hello'` has type `int`, where its value is implementation-defined (depends on compiler, architecture, endianness). So, `std::string` is trying to convert the `int` to a `char` which is too large."
+    "explanation": "**Compilation error:** string literals use double quotes, e.g. `\"Hello\"`.\n\n`'Hello'` is a multi-character character literal with an implementation-defined integer value.\n\nThat integer cannot be used to construct a `std::string`, so you get a type-conversion error."
   },
   {
     "id": "p0028",
     "title": "Reassignment Overwrites the Old Value",
     "difficulty": 1,
     "concepts": ["assignment", "variable", "output order"],
-    "explanation": "The variable `num` is first initialized to 10, then reassigned to 25. The first output prints 10, and after reassignment it prints 25, resulting in '1025'."
+    "explanation": "Assignment replaces the current value stored in a variable.\n\nAfter `num` is reassigned, later output uses the new value.\n\nIf you print twice without spaces/newlines, the digits from both outputs run together."
   },
   {
     "id": "p0029",
     "title": "Copy vs List Initialization",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": [
       "copy-initialization",
       "list-initialization",
       "narrowing conversion",
       "syntax error"
     ],
-    "explanation": "List-initialization `{3.9}` disallows narrowing conversion from double to int. Hence, while `int a = 3.9;` works (truncates to 3), `int b {3.9};` fails with a compile-time error."
+    "explanation": "Copy-initialization like `int a = 3.9;` allows a narrowing conversion, so the value is converted to `int` (fractional part discarded).\n\nList-initialization with braces (`int b{3.9};`) is stricter and forbids narrowing conversions at compile time.\n\nThis is one reason braces are often preferred when you want safer initialization."
   },
   {
     "id": "p0030",
     "title": "Value Initialization with Empty Braces",
     "difficulty": 1,
     "concepts": ["value-initialization", "zero-initialization"],
-    "explanation": "Using empty braces `{}` performs value-initialization. For fundamental types like int, this results in zero-initialization, so `count` becomes 0."
+    "explanation": "`int count{};` uses empty brace-initialization.\n\nFor fundamental types, that performs value-initialization, which results in zero-initialization.\n\nSo `count` starts as 0 without you having to write `= 0`."
   },
   {
     "id": "p0031",
     "title": "Multiple Variables with One Initializer Trap",
-    "difficulty": 4,
+    "difficulty": 3,
     "concepts": [
       "uninitialized variable",
       "multiple declarations",
       "undefined behavior"
     ],
-    "explanation": "Only `b` is initialized to 5; `a` is left uninitialized, resulting in undefined behavior when printed. The output is unpredictable, which may result in a runtime error.",
+    "explanation": "In a declaration like `int a, b = 5;`, only `b` is initialized.\n\n`a` is a local `int` with an indeterminate value, and printing it reads an indeterminate value ⇒ **undefined behavior**.\n\nFix: initialize both variables (e.g., `int a{}, b{5};`).",
     "UB": true
   },
   {
@@ -225,7 +225,7 @@
     "title": "[[maybe_unused]] Suppresses Warnings",
     "difficulty": 2,
     "concepts": ["maybe_unused", "compiler warnings", "C++17 feature"],
-    "explanation": "The `[[maybe_unused]]` attribute tells the compiler to ignore unused variable warnings. The program compiles cleanly and prints 'Hello'."
+    "explanation": "`[[maybe_unused]]` is an attribute that can silence “unused variable” warnings.\n\nIt does not change what the program does at runtime; it only affects compiler diagnostics.\n\nIt’s useful when you intentionally keep a variable for readability or future code."
   },
   {
     "id": "p0033",
@@ -236,36 +236,36 @@
       "copy-initialization",
       "list-initialization"
     ],
-    "explanation": "All four forms initialize variables to 5 and behave identically for ints in C++17+. Their sum is 20."
+    "explanation": "For `int`, several initialization forms produce the same value: direct (`int a(5);`), copy (`int b = 5;`), and brace (`int c{5};`).\n\nThis problem checks that you recognize these as equivalent for non-narrowing `int` initializations.\n\nDifferences appear with narrowing conversions and some user-defined types."
   },
   {
     "id": "p0034",
     "title": "Zero and Custom Initializations Together",
     "difficulty": 1,
     "concepts": ["value-initialization", "direct-list-initialization"],
-    "explanation": "Value-initialization with `{}` gives 0, direct-list-initialization with `{42}` assigns 42. Output is '0 42'."
+    "explanation": "Empty braces (`{}`) value-initialize an `int` to 0.\n\nBraces with a value (`{42}`) initialize the variable to 42.\n\nPrinting both shows they were initialized independently."
   },
   {
     "id": "p0035",
     "title": "Disallowed Narrowing Conversion in List Initialization",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": [
       "list-initialization",
       "narrowing conversion",
       "compile-time error"
     ],
-    "explanation": "List-initialization prevents narrowing conversions like from double 8.2 to int. The compiler stops with a compile-time error."
+    "explanation": "Brace/list-initialization prevents narrowing conversions.\n\nSo initializing an `int` from a non-integer `double` like 8.2 using braces is ill-formed and must be rejected at compile time.\n\nThis feature helps catch accidental loss of information early."
   },
   {
     "id": "p0036",
     "title": "Default Initialization Produces Garbage Value",
-    "difficulty": 4,
+    "difficulty": 3,
     "concepts": [
       "default-initialization",
       "uninitialized variable",
       "undefined behavior"
     ],
-    "explanation": "Default-initialized ints have indeterminate values. Accessing or printing `n` is undefined behavior, which may result in a runtime error.",
+    "explanation": "A local `int n;` is default-initialized, which leaves it with an indeterminate value.\n\nPrinting `n` reads that indeterminate value, which is **undefined behavior** (no single correct output).\n\nPrefer `int n{};` to get a guaranteed zero.",
     "UB": true
   },
   {
@@ -277,7 +277,7 @@
       "copy-initialization",
       "multiple declarations"
     ],
-    "explanation": "Variable `a` is value-initialized with `{}`, giving it a value of 0. Variable `b` is copy-initialized to 5. Variables `c` and `d` are both copy-initialized to 10 and 15 respectively. When printed, the program outputs '0 5 10 15'."
+    "explanation": "This program mixes initialization styles to show they can coexist.\n\n`a{}` becomes 0 (value-initialization), `b = 5` is copy-initialization, and the remaining variables are initialized with their given values.\n\nThe output is just the variables printed in order."
   },
   {
     "id": "p0038",
@@ -291,19 +291,19 @@
       "std::endl",
       "\\n"
     ],
-    "explanation": "Multiple `<<` insertions build one output stream. `\"B\\n\"` outputs a newline without flushing, while `std::endl` outputs a newline and flushes; visually here they both just move to the next line."
+    "explanation": "Chaining `<<` inserts multiple pieces of text into `std::cout` in order.\n\n`\"B\\n\"` outputs a newline character, while `std::endl` outputs a newline and flushes the stream.\n\nFlushing can matter for interactive programs and performance, even if it looks the same in a simple console run."
   },
   {
     "id": "p0039",
     "title": "No newline until you add one",
     "difficulty": 1,
     "concepts": ["std::cout", "newline", "buffering", "\\n"],
-    "explanation": "Separate `std::cout` statements do not automatically create separate lines. Output stays on the same line until a newline character (such as `\\n`) is sent to the stream."
+    "explanation": "Separate `std::cout` statements do not automatically create new lines.\n\nText stays on the same line until you output a newline (`\\n`) or `std::endl`.\n\nSo predicting output means tracking exactly where newlines/spaces are printed."
   },
   {
     "id": "p0040",
     "title": "Failed extraction stops later reads",
-    "difficulty": 4,
+    "difficulty": 3,
     "concepts": [
       "std::cin",
       "operator>>",
@@ -311,13 +311,13 @@
       "stream-state",
       "buffering"
     ],
-    "explanation": "`a` successfully extracts `12`, leaving `abc 7` in the input buffer. Extracting into `b` then fails (no valid integer at the front), so `b` becomes `0` and the stream enters a failed state; the extraction for `c` aborts immediately and `c` keeps its previous value.",
+    "explanation": "Formatted input (`operator>>`) reads what it can for the requested type and leaves the rest in the buffer.\n\nAfter `a` reads `12`, the next characters are `abc...`, so extracting an `int` into `b` fails (the next character isn’t a valid start for an integer).\n\nOn failure, the stream sets `failbit` and the destination variable is **not modified** (so `b` keeps its previous value—often 0 if you initialized it). Further extractions (like into `c`) immediately do nothing until you clear the error state.",
     "stdin": "12abc 7\n"
   },
   {
     "id": "p0041",
     "title": "Fractional part left in the buffer",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": [
       "std::cin",
       "operator>>",
@@ -325,7 +325,7 @@
       "buffering",
       "char"
     ],
-    "explanation": "Reading an `int` from `3.7` extracts only the leading `3` and stops before the `.`. The next extraction into `char` reads that `.` character, and then the final `int` extraction reads `7`.",
+    "explanation": "Extracting an `int` from `3.7` consumes only the integer prefix (`3`) and stops right before the `.`.\n\nThe `.` remains in the input buffer, so the next extraction into a `char` reads `.`.\n\nAfter that, extracting an `int` reads the remaining `7`.",
     "stdin": "3.7\n"
   },
   {
@@ -338,13 +338,13 @@
       "whitespace-skipping",
       "signed-input"
     ],
-    "explanation": "Formatted extraction with `>>` skips leading whitespace and accepts an optional leading `+` or `-` sign for integers, so both values parse cleanly.",
+    "explanation": "`operator>>` for numbers skips leading whitespace automatically.\n\nFor integers, it also accepts an optional leading `+` or `-` sign.\n\nSo inputs like `+5` and `-2` parse successfully as integers.",
     "stdin": "   +5 -2\n"
   },
   {
     "id": "p0043",
     "title": "Newline is skipped for the next extraction",
-    "difficulty": 3,
+    "difficulty": 2,
     "concepts": [
       "std::cin",
       "operator>>",
@@ -352,7 +352,1088 @@
       "buffering",
       "char"
     ],
-    "explanation": "After reading the integer, the trailing newline remains in the input buffer. The next `>>` into a `char` discards leading whitespace (including that newline) and then reads the next non-whitespace character, which is `x`.",
+    "explanation": "After extracting the integer, the newline is still in the buffer.\n\nBut `operator>>` for `char` skips leading whitespace by default, so it discards that newline.\n\nThen it reads the next non-whitespace character (here, `x`).",
     "stdin": "9\nx\n"
+  },
+  {
+    "id": "p0044",
+    "title": "Return Isn’t a Variable",
+    "difficulty": 2,
+    "concepts": [
+      "keywords",
+      "reserved-words",
+      "invalid-identifier",
+      "compilation-error"
+    ],
+    "explanation": "In C++, **keywords** are reserved words that have special meaning in the language, and you can’t use them as identifiers (variable names, function names, etc.).\n\n`return` is a keyword, so attempting to declare `int return{ 4 };` is ill-formed and the program fails to compile.\n\nRenaming the variable to something like `returnValue` (which is not a keyword) fixes the issue because it follows the rule “identifier can not be a keyword.”"
+  },
+  {
+    "id": "p0045",
+    "title": "Spaces Split Tokens",
+    "difficulty": 1,
+    "concepts": [
+      "identifiers",
+      "naming-rules",
+      "whitespace",
+      "compilation-error"
+    ],
+    "explanation": "Identifier names can only use letters, digits, and underscores, and they can’t contain whitespace.\n\nWhen you write `int my variable{ 5 };`, the compiler treats `my` and `variable` as separate tokens rather than one name, so the declaration is invalid and compilation fails.\n\nTo make a multi-word name legal, use either underscores (`my_variable`) or camelCase (`myVariable`)."
+  },
+  {
+    "id": "p0046",
+    "title": "Return vs returnValue",
+    "difficulty": 2,
+    "concepts": ["case-sensitivity", "identifiers", "naming", "output"],
+    "explanation": "C++ is case-sensitive, meaning `Return` and `returnValue` are distinct identifiers.\n\nThis program declares `Return` as 4, then initializes `returnValue` to `Return + 1`, which is 5.\n\nBecause it prints each value on its own line, the output shows 4 followed by 5."
+  },
+  {
+    "id": "p0047",
+    "title": "override and final as Names",
+    "difficulty": 3,
+    "concepts": [
+      "special-identifiers",
+      "override",
+      "final",
+      "identifiers",
+      "output"
+    ],
+    "explanation": "C++ has “identifiers with special meaning” such as `override` and `final`, which behave specially only in certain contexts, but they are not reserved keywords in general.\n\nHere, `override` and `final` are used as ordinary variable names inside `main`, so the declarations are valid.\n\nThe program computes `final` as `10 - 3` and prints 7."
+  },
+  {
+    "id": "p0048",
+    "title": "Underscore Start, Digits Later",
+    "difficulty": 2,
+    "concepts": ["identifiers", "starts-with-underscore", "digits", "output"],
+    "explanation": "An identifier must begin with a letter or an underscore, and after that it may contain letters, digits, and underscores.\n\nSo `_count` is syntactically legal (even though starting with an underscore is discouraged as a best practice).\n\n`count_2` is also legal because it starts with a letter and uses only allowed characters, and the program prints the product 2 * 5 which is 10."
+  },
+  {
+    "id": "p0049",
+    "title": "Hyphen Breaks The Name",
+    "difficulty": 2,
+    "concepts": [
+      "identifiers",
+      "invalid-characters",
+      "hyphen",
+      "compilation-error"
+    ],
+    "explanation": "In C++, identifiers (variable names) may use letters, digits, and underscores only; characters like `-` are not allowed inside an identifier.\n\nWhen the compiler sees `total-score`, it interprets `-` as the minus operator, not as part of a name, so the declaration `int total-score{ 8 };` is not a valid variable declaration and compilation fails.\n\nUse `total_score` or `totalScore` instead to form a valid multi-word identifier."
+  },
+  {
+    "id": "p0050",
+    "title": "Whitespace-split stream insertion",
+    "difficulty": 1,
+    "concepts": ["whitespace", "formatting", "newline", "operator<<"],
+    "explanation": "C++ mostly ignores whitespace outside of quoted text, so splitting a single statement across multiple lines doesn’t change meaning.\nThis program builds one output using several chained `<<` operations, just formatted on separate lines for readability."
+  },
+  {
+    "id": "p0051",
+    "title": "Spaces inside quotes are literal",
+    "difficulty": 2,
+    "concepts": ["string-literal", "whitespace", "output"],
+    "explanation": "Inside a string literal, the exact amount of whitespace (spaces/tabs) is preserved and printed exactly as written.\nUsing visible delimiters (`|`) helps you see that multiple spaces between `A` and `B` are part of the output."
+  },
+  {
+    "id": "p0052",
+    "title": "String literals concatenate across whitespace",
+    "difficulty": 2,
+    "concepts": ["string-literal", "concatenation", "whitespace"],
+    "explanation": "Adjacent string literals separated only by whitespace are concatenated by the compiler into one larger string literal.\nThat means line breaks and indentation between the quotes don’t appear in the output unless they’re inside the quotes."
+  },
+  {
+    "id": "p0053",
+    "title": "Missing whitespace makes a new identifier",
+    "difficulty": 3,
+    "concepts": ["whitespace", "tokens", "identifiers", "declaration"],
+    "explanation": "Some language elements must be separated by whitespace so the compiler can tell tokens apart (e.g., `int x` needs separation).\n`intx` is treated as a single identifier name, so `intx = 7;` attempts to use an undeclared variable and fails to compile."
+  },
+  {
+    "id": "p0054",
+    "title": "Single-line comment ends at newline",
+    "difficulty": 2,
+    "concepts": ["comments", "newline", "whitespace", "formatting"],
+    "explanation": "This compiles and runs: `//` comments end at the newline, so only `// comment` is ignored.\nAfter the newline, `<< \"B\\n\";` is still part of the same statement (C++ generally ignores whitespace and statements can be split across lines), so it effectively becomes `std::cout << \"A\" << \"B\\n\";`."
+  },
+  {
+    "id": "p0055",
+    "title": "Newline inside a string literal",
+    "difficulty": 3,
+    "concepts": ["string-literal", "newline", "syntax"],
+    "explanation": "A raw newline is not allowed inside a normal quoted string literal in C++ source code.\nPlacing a line break between the opening and closing quote breaks tokenization/parsing and results in a compilation error."
+  },
+  {
+    "id": "p0056",
+    "title": "Preprocessor directive must start the line",
+    "difficulty": 4,
+    "concepts": ["preprocessor", "include", "newline", "syntax"],
+    "explanation": "Preprocessor directives (like `#include`) must appear on their own line and be recognized starting at the beginning of the line (after optional whitespace).\nPutting `#include` after other tokens on the same line prevents it from being treated as a directive, causing a compile-time error."
+  },
+  {
+    "id": "p0057",
+    "title": "Operator on next line still works",
+    "difficulty": 2,
+    "concepts": ["whitespace", "expressions", "operators", "formatting"],
+    "explanation": "Whitespace is generally ignored, so splitting an expression across lines doesn’t change evaluation.\nThe style guideline shown in the lesson recommends putting an operator at the beginning of the next line for readability, and the code still compiles and runs normally."
+  },
+  {
+    "id": "p0058",
+    "title": "Operator precedence: multiply before add",
+    "difficulty": 1,
+    "concepts": ["literals", "operators", "precedence", "arithmetic"],
+    "explanation": "The expression `2 + 3 * 4` uses two operators with different precedence. In C++, `*` binds tighter than `+`, so it evaluates as `2 + (3 * 4)`.\n\nParentheses override precedence, so `(2 + 3) * 4` forces the addition first and then multiplies the result."
+  },
+  {
+    "id": "p0059",
+    "title": "Assignment returns the left operand",
+    "difficulty": 2,
+    "concepts": [
+      "assignment-operator",
+      "return-value",
+      "side-effects",
+      "sequencing"
+    ],
+    "explanation": "The assignment operator `=` has a side effect (it changes `x`) and also yields a value.\n\nWe store the result of `(x = 5)` into `y` in a separate statement, then print `y` and `x` afterward."
+  },
+  {
+    "id": "p0060",
+    "title": "Chained assignment: right to left",
+    "difficulty": 3,
+    "concepts": [
+      "assignment-operator",
+      "associativity",
+      "return-value",
+      "chaining",
+      "sequencing"
+    ],
+    "explanation": "`x = y = 7` groups as `x = (y = 7)` due to right-to-left associativity of assignment.\n\nWe first compute and store the whole expression result into `result`, then print `result`, `x`, and `y`."
+  },
+  {
+    "id": "p0061",
+    "title": "Unary minus vs binary subtraction",
+    "difficulty": 3,
+    "concepts": [
+      "unary-operator",
+      "binary-operator",
+      "operators",
+      "precedence"
+    ],
+    "explanation": "The `-` symbol can be unary (negation) or binary (subtraction) depending on context.\n\nIn `-5 - -5`, the outer `-` signs are unary negations, and the middle `-` is subtraction. Parentheses in `-(5 - -5)` force the subtraction first and then negate the result."
+  },
+  {
+    "id": "p0062",
+    "title": "You cannot assign to a literal",
+    "difficulty": 2,
+    "concepts": [
+      "literals",
+      "assignment-operator",
+      "compile-time-error",
+      "semantic-error"
+    ],
+    "explanation": "The left-hand side of `=` must be something assignable (a modifiable object).\n\nA literal like `5` is a fixed value, not an assignable storage location, so `5 = x;` is rejected by the compiler as a semantic error."
+  },
+  {
+    "id": "p0063",
+    "title": "Expression initializer walk-through",
+    "difficulty": 1,
+    "concepts": [
+      "expressions",
+      "evaluation",
+      "initialization",
+      "function-call",
+      "arithmetic"
+    ],
+    "explanation": "Each initializer uses an **expression** that is evaluated to a single value.\n\n- `a` initializes from a literal.\n- `b` initializes from `a + 3` (variable + literal).\n- `c` initializes from `(b + five()) * 2` (subexpressions `b`, `five()`, and the arithmetic operators).\n\nThe `std::cout << ...` lines are expression statements: `operator<<` is evaluated for its side effect (printing).",
+    "UB": false
+  },
+  {
+    "id": "p0064",
+    "title": "Assignment is an expression",
+    "difficulty": 2,
+    "concepts": [
+      "expressions",
+      "assignment-operator",
+      "side-effects",
+      "initialization"
+    ],
+    "explanation": "`(x = 3) + 4` is a compound expression.\n\n- The subexpression `x = 3` has a side effect (it assigns `3` to `x`).\n- In C++, the assignment expression also evaluates to the assigned-to object (`x`), so its value is `3` right after the assignment.\n- Then `3 + 4` evaluates to `7`, which initializes `y`.\n\nSo `x` becomes `3`, and `y` becomes `7`.",
+    "UB": false
+  },
+  {
+    "id": "p0065",
+    "title": "Useless expression statement",
+    "difficulty": 1,
+    "concepts": ["expression-statement", "discarded-result", "side-effects"],
+    "explanation": "`(x + 5);` is an expression turned into an **expression** statement by adding a semicolon.\n\n- The expression `x + 5` is evaluated (producing a value), but that result is not used, so it gets discarded.\n- Because `+` has no side effects on `x`, this statement effectively does nothing.\n- The next statement `x = x + 5;` performs the real work by assigning the computed value back into `x`.\n\nThis demonstrates that expression statements run the expression, but unused results are thrown away.",
+    "UB": false
+  },
+  {
+    "id": "p0066",
+    "title": "Void result used where a value is required",
+    "difficulty": 2,
+    "concepts": [
+      "expressions",
+      "void-function",
+      "initialization",
+      "semantic-error"
+    ],
+    "explanation": "`doNothing()` is a function call expression, but it produces **no** value because the function returns `void`.\n\n`int x{ doNothing() };` requires a value-producing expression to initialize `x`, but a `void` expression can’t be converted to `int`. That’s why the program fails to compile (a semantic/type error)."
+  },
+  {
+    "id": "p0067",
+    "title": "Bookmarking the call",
+    "difficulty": 1,
+    "concepts": [
+      "functions",
+      "call-order",
+      "caller-callee",
+      "stdout",
+      "newlines"
+    ],
+    "explanation": "Execution starts in `main()`, prints `0`, then calls `first()`.\n\nInside `first()`, printing `\"1\"` does not add a newline. Then `first()` calls `second()`, which prints `\"2\\n\"`, so the `1` and `2` end up on the same line as `12`. Control then returns to `first()`, which prints `\"3\\n\"`, and finally returns to `main()` to print `\"4\\n\"`.\n\nThis demonstrates how a function call suspends the caller, runs the callee, then resumes right after the call site."
+  },
+  {
+    "id": "p0068",
+    "title": "Caller, callee, and repeats",
+    "difficulty": 2,
+    "concepts": [
+      "functions",
+      "nested-calls",
+      "call-stack",
+      "reuse",
+      "trace-execution"
+    ],
+    "explanation": "`main()` prints `M1`, then calls `doA()`.\n\n`doA()` prints `A1`, calls `doB()` (which prints `B`), then prints `A2`, and returns to `main()`.\n\nBack in `main()`, `doB()` is called directly once, then `doA()` is called a second time, producing the same `A1`, `B`, `A2` sequence again. This reinforces that functions are reusable and that call order follows the exact sequence of calls and returns."
+  },
+  {
+    "id": "p0069",
+    "title": "Forgot the parentheses (but it still compiles)",
+    "difficulty": 2,
+    "concepts": [
+      "functions",
+      "function-call",
+      "parentheses",
+      "caller-callee",
+      "trace-execution"
+    ],
+    "explanation": "`doPrint;` is not a function call because it has no trailing parentheses.\n\nIn C++, writing a function name by itself forms an expression that refers to the function (it does not execute the function body). Since the program never actually calls `doPrint` at that point, nothing is printed there.\n\nOnly `doPrint();` invokes the function, so `In doPrint()` appears exactly once, between `Middle` and `End`."
+  },
+  {
+    "id": "p0070",
+    "title": "Call before definition",
+    "difficulty": 2,
+    "concepts": [
+      "functions",
+      "declaration-vs-definition",
+      "call-before-definition",
+      "compile-error"
+    ],
+    "explanation": "`greet()` is called inside `main()`, but the compiler has not seen any declaration of `greet` yet.\n\nIn C++, a function must be declared (or defined) before it is used. Since there is no forward declaration like `void greet();` above `main()`, the call is ill-formed and compilation fails.\n\nThis is why beginners often place helper function definitions above `main()` until they learn forward declarations."
+  },
+  {
+    "id": "p0071",
+    "title": "Nested function attempt",
+    "difficulty": 2,
+    "concepts": ["functions", "nested-functions", "scope", "compile-error"],
+    "explanation": "C++ does not allow defining one named function inside another named function. The attempted definition of `inner()` appears inside `main()`, making it a nested function definition.\n\nBecause nested function definitions are not part of C++ syntax, the compiler rejects the program. The correct approach is to define `inner()` at namespace scope (outside `main()`)."
+  },
+  {
+    "id": "p0072",
+    "title": "Return jumps back",
+    "difficulty": 1,
+    "concepts": [
+      "functions",
+      "void",
+      "return",
+      "control-flow",
+      "caller-callee"
+    ],
+    "explanation": "`main()` prints `M1` and calls `check()`.\n\n`check()` prints `C1` and then executes `return;`, which immediately ends the function and returns control to the caller. The `std::cout << \"C2\\n\";` line is never executed.\n\nBack in `main()`, execution resumes right after the call to `check()` and prints `M2`."
+  },
+  {
+    "id": "p0073",
+    "title": "Sum of two return values",
+    "difficulty": 1,
+    "concepts": [
+      "functions",
+      "return-value",
+      "return-statement",
+      "expression-evaluation"
+    ],
+    "explanation": "Each function call (return7 and return9) evaluates to the value it returns. Those returned values are then used like ordinary integers in the expression return7() + return9(), producing 16, which is printed."
+  },
+  {
+    "id": "p0074",
+    "title": "Return value ignored but call happens",
+    "difficulty": 2,
+    "concepts": [
+      "return-value",
+      "ignored-return",
+      "function-call",
+      "side-effects"
+    ],
+    "explanation": "A function’s return value can be used or ignored by the caller. The second call bump(a) still executes (so it still prints), but its returned int is discarded because nothing uses it. The variable a keeps the value it got from the first call."
+  },
+  {
+    "id": "p0075",
+    "title": "Only the first return runs",
+    "difficulty": 1,
+    "concepts": ["return-statement", "control-flow", "unreachable-code"],
+    "explanation": "When a return statement runs, the function exits immediately and control goes back to the caller. That means the second return statement is unreachable, so getNumber() always returns 5, both times it is called."
+  },
+  {
+    "id": "p0076",
+    "title": "Missing return on one path",
+    "difficulty": 4,
+    "concepts": [
+      "value-returning-function",
+      "missing-return",
+      "undefined-behavior"
+    ],
+    "explanation": "pick has return type int, so it must return an int on every possible control path. When wantTen is false, execution reaches the end of the function without a return statement, so using the result is undefined behavior (anything can happen).",
+    "UB": true
+  },
+  {
+    "id": "p0077",
+    "title": "main can omit return",
+    "difficulty": 2,
+    "concepts": ["main", "implicit-return", "status-code"],
+    "explanation": "Most value-returning functions must explicitly return a value, but main is a special case: if it reaches the end without a return statement, it implicitly returns 0 to the operating system. The program still prints 42 because that comes from calling answer()."
+  },
+  {
+    "id": "p0078",
+    "title": "Nested function is not allowed",
+    "difficulty": 3,
+    "concepts": ["functions", "scope", "compilation-error"],
+    "explanation": "C++ does not allow defining a function inside another function. inner is defined within outer, so the program is ill-formed and fails to compile."
+  },
+  {
+    "id": "p0079",
+    "title": "Reusing an input function",
+    "difficulty": 2,
+    "concepts": ["DRY", "function-reuse", "return-by-value", "input"],
+    "explanation": "getValueFromUser reads an int and returns it by value. main calls it twice to initialize x and y, then uses those returned values to compute and print the sum, avoiding duplicated input code.",
+    "stdin": "5\n7\n"
+  },
+  {
+    "id": "p0080",
+    "title": "Call order, no values",
+    "difficulty": 1,
+    "concepts": [
+      "void function",
+      "function call",
+      "side effects",
+      "sequencing"
+    ],
+    "explanation": "A `void` function returns no value, but it can still perform useful behavior (here, printing).\n\nCalling a function as a standalone statement (`printA();`) does not require any value, so calling `void` functions this way is fine. The output order matches the call order in `main()`."
+  },
+  {
+    "id": "p0081",
+    "title": "Printing a void result",
+    "difficulty": 2,
+    "concepts": [
+      "void function",
+      "ostream insertion",
+      "expression requires a value",
+      "compile error"
+    ],
+    "explanation": "`shout()` has return type `void`, so it produces no value.\n\n`std::cout << ...` requires a value on the right-hand side to insert into the stream. Trying to stream the result of a `void` function call (`std::cout << shout()`) is ill-formed, so the program fails to compile."
+  },
+  {
+    "id": "p0082",
+    "title": "Returning a value from void",
+    "difficulty": 2,
+    "concepts": ["void function", "return statement", "compile error"],
+    "explanation": "In a `void` (non-value returning) function, you may write `return;` with no value to exit the function early.\n\nBut `return 7;` attempts to return a value from a `void` function, which is not allowed. The compiler rejects this."
+  },
+  {
+    "id": "p0083",
+    "title": "Early return in a void function",
+    "difficulty": 2,
+    "concepts": ["void function", "early return", "control flow"],
+    "explanation": "A `void` function can use `return;` to stop executing and return control to the caller immediately.\n\nIn `show(-1)`, the function prints `A` and then returns before printing `B`. In `show(1)`, the condition is false, so it prints both `A` and `B`."
+  },
+  {
+    "id": "p0084",
+    "title": "Ignore value-returning functions",
+    "difficulty": 3,
+    "concepts": [
+      "void function",
+      "value-returning function",
+      "ignored return value",
+      "side effects"
+    ],
+    "explanation": "`get()` returns an `int`, but it also has a side effect: it calls `ping()`, which prints `X`.\n\nWhen `main()` calls `get();` by itself, the returned `int` is simply ignored (that is allowed). The second call, `std::cout << get()`, uses the returned value (`4`) in a context that requires a value, and the side effect prints another `X` before the `4` is streamed."
+  },
+  {
+    "id": "p0085",
+    "title": "Void in the comma operator",
+    "difficulty": 4,
+    "concepts": [
+      "void function",
+      "comma operator",
+      "side effects",
+      "expression value"
+    ],
+    "explanation": "The comma operator evaluates its left operand, discards its value, then evaluates and yields the right operand.\n\nSo in `(sideEffect(), 3)`, `sideEffect()` runs (printing `S`), then the whole parenthesized expression evaluates to `3`, which can be printed. The same happens for `(sideEffect(), 4)`."
+  },
+  {
+    "id": "p0086",
+    "title": "Initializing a variable with void",
+    "difficulty": 3,
+    "concepts": ["void function", "auto type deduction", "compile error"],
+    "explanation": "`doNothing()` returns `void`, meaning it produces no value.\n\n`auto x = doNothing();` tries to create a variable initialized from that (non-existent) value. Since there is no value and no type to store, this is ill-formed and the program does not compile."
+  },
+  {
+    "id": "p0087",
+    "title": "Pass-by-value copy",
+    "difficulty": 1,
+    "concepts": [
+      "function-parameters",
+      "arguments",
+      "pass-by-value",
+      "value-parameters",
+      "cout"
+    ],
+    "explanation": "The argument `a` is copied into the parameter `x` (pass by value).\n\nInside `bump`, `x` becomes `7` and that gets printed. But `a` in `main` is a separate variable that never changes, so it still prints `5`."
+  },
+  {
+    "id": "p0088",
+    "title": "Return value as an argument",
+    "difficulty": 2,
+    "concepts": [
+      "function-parameters",
+      "arguments",
+      "return-values",
+      "pass-by-value",
+      "cin",
+      "cout"
+    ],
+    "explanation": "`getValueFromUser()` prints the prompt, reads an integer, and returns it.\n\nThat return value is used directly as the argument in `printDouble(getValueFromUser())`. The returned integer is copied into `printDouble`'s parameter `value`, and then the doubled result is printed.\n\nThe prompt and the final message appear on the same line because the prompt does not print a newline."
+  },
+  {
+    "id": "p0089",
+    "title": "Too few arguments",
+    "difficulty": 2,
+    "concepts": [
+      "function-parameters",
+      "arguments",
+      "compile-error",
+      "argument-count"
+    ],
+    "explanation": "`add` is declared as `int add(int x, int y)`, so it requires two arguments.\n\n`add(1)` provides only one argument, so the compiler cannot match the call to the function signature, producing a compile-time semantic error."
+  },
+  {
+    "id": "p0090",
+    "title": "Returning a value from void",
+    "difficulty": 2,
+    "concepts": [
+      "return-statement",
+      "void",
+      "compile-error",
+      "function-signature"
+    ],
+    "explanation": "The function `multiply` has return type `void`, so it is not allowed to return a value.\n\n`return x * y;` attempts to return an `int` from a `void` function, which is a semantic error. Additionally, `std::cout << multiply(4, 5)` tries to stream a `void` result, which also cannot work."
+  },
+  {
+    "id": "p0091",
+    "title": "Unnamed parameter",
+    "difficulty": 2,
+    "concepts": [
+      "unnamed-parameter",
+      "unreferenced-parameter",
+      "function-parameters",
+      "arguments"
+    ],
+    "explanation": "In a function definition, a parameter name is optional.\n\n`pickFirst(int x, int)` takes two arguments, but only uses the first parameter `x`. The second parameter is unnamed, which is a common way to avoid an unused-parameter warning while still keeping the function signature compatible with existing calls."
+  },
+  {
+    "id": "p0092",
+    "title": "Expressions and nested calls as arguments",
+    "difficulty": 3,
+    "concepts": [
+      "arguments",
+      "expression-arguments",
+      "return-values",
+      "nested-calls",
+      "pass-by-value"
+    ],
+    "explanation": "Each function parameter is initialized from its corresponding argument.\n\nArguments can be expressions, so `1 + 2` and `3 * 4` are evaluated first, then their results are copied into `add`'s parameters.\n\nArguments can also be other function calls. `multiply(2, 3)` runs first to produce a value for `add`'s second parameter, and `add(2, 3)` runs first in the final line for the same reason."
+  },
+  {
+    "id": "p0093",
+    "title": "Local Parameters Aren’t the Same Variable",
+    "difficulty": 2,
+    "concepts": [
+      "local-variables",
+      "function-parameters",
+      "scope",
+      "lifetime",
+      "pass-by-value"
+    ],
+    "explanation": "Function parameters are local variables whose scope is the function body.\n\nIn `doIt`, the parameter `x` is initialized from `main`'s `x` by value, so assigning to `doIt`'s `x` does not change `main`'s `x`.\n\n`doIt`'s `y` is also a separate local variable that exists only inside `doIt`. Even though `main` also has a `y`, the two variables live in different scopes and are unrelated.\n\nWhen `doIt` ends, its locals go out of scope and are destroyed, but `main`'s locals remain unchanged."
+  },
+  {
+    "id": "p0094",
+    "title": "Inner Block Shadowing",
+    "difficulty": 2,
+    "concepts": ["block-scope", "shadowing", "local-scope"],
+    "explanation": "A local variable enters scope at its point of definition and is usable until the end of the innermost set of braces that contains it.\n\nInside the inner `{}` block, a new `x` is defined. This inner `x` shadows (hides) the outer `x` while the program is inside that block.\n\nWhen the block ends, the inner `x` (and `y`) go out of scope. After that, `x` refers to the original outer variable again."
+  },
+  {
+    "id": "p0095",
+    "title": "Used Before Definition",
+    "difficulty": 1,
+    "concepts": [
+      "scope",
+      "point-of-definition",
+      "compile-error",
+      "local-scope"
+    ],
+    "explanation": "Local variables have block scope starting at the point where they are defined.\n\nThe program tries to output `x` before the definition `int x{ 5 };`, so the identifier `x` is not in scope yet.\n\nUsing an identifier that is out of scope is a compile-time error (reported here as a semantic error)."
+  },
+  {
+    "id": "p0096",
+    "title": "Block Scope vs Outer Variable",
+    "difficulty": 2,
+    "concepts": ["block-scope", "scope", "lifetime", "local-variables"],
+    "explanation": "A variable defined inside a nested block (like `y`) exists only from its definition until the closing brace of that block.\n\nThe outer variable `x` is in scope for the whole `main` function, so it is still usable inside the nested block.\n\nAssigning to `x` inside the block modifies the same outer `x`, so the updated value is still present after the block ends, even though `y` no longer exists."
+  },
+  {
+    "id": "p0097",
+    "title": "Each Call Gets New Parameter",
+    "difficulty": 2,
+    "concepts": [
+      "function-parameters",
+      "local-variables",
+      "lifetime",
+      "pass-by-value"
+    ],
+    "explanation": "Each time a function is called, its parameters are created and initialized for that call, and then destroyed when the function returns.\n\n`tweak` takes `x` by value, so it receives a copy of the caller's value.\n\nChanging `tweak`'s parameter does not affect `main`'s `x`, and calling `tweak(x)` twice shows that the parameter starts from the original argument each time."
+  },
+  {
+    "id": "p0098",
+    "title": "Same Name, Different Functions",
+    "difficulty": 2,
+    "concepts": ["local-scope", "function-scope", "name-independence"],
+    "explanation": "Local variables are only visible inside the function (or block) where they are defined.\n\n`main` and `show` both define a local variable named `x`, but these are two different variables in two different scopes.\n\nWhen the program is inside `main`, `x` refers to `main`'s variable. When inside `show`, `x` refers to `show`'s variable, and neither one affects the other."
+  },
+  {
+    "id": "p0099",
+    "title": "Use Inner Variable After Block",
+    "difficulty": 1,
+    "concepts": ["block-scope", "local-scope", "out-of-scope", "compile-error"],
+    "explanation": "A local variable has block scope: it is in scope from its point of definition to the end of the innermost `{}` block that contains it.\n\n`x` is declared inside the inner braces, so it goes out of scope at the closing `}` of that block.\n\nAfter the block ends, the identifier `x` is no longer visible, so `std::cout << x` is a compile-time error."
+  },
+  {
+    "id": "p0100",
+    "title": "Undefined Identifier",
+    "difficulty": 1,
+    "concepts": ["Compiler Sequential Processing", "Compilation Error"],
+    "explanation": "This program fails to compile because the C++ compiler processes code sequentially. When it reaches the call to `calculate()` inside `main`, it has not yet seen a definition or a declaration for that function. The compiler does not look ahead, resulting in an 'identifier not found' error. This can be fixed by moving the function definition above `main` or adding a forward declaration."
+  },
+  {
+    "id": "p0101",
+    "title": "Valid Forward Declaration",
+    "difficulty": 1,
+    "concepts": ["Forward Declaration", "Function Prototype"],
+    "explanation": "This program compiles and runs successfully. The line `int magic(int x, int y);` is a **forward declaration** (or function prototype). It tells the compiler that a function named `magic` exists, takes two integers, and returns an integer. This satisfies the compiler when `main` calls the function, even though the actual definition (body) of the function appears later in the file."
+  },
+  {
+    "id": "p0102",
+    "title": "Missing Definition",
+    "difficulty": 3,
+    "concepts": ["Linker Error", "Forward Declaration", "Definition"],
+    "explanation": "This program compiles but fails to link. The forward declaration `void doSomething();` satisfies the **compiler**, so no syntax errors occur. However, the function body is never defined. When the **linker** tries to connect the function call in `main` to its implementation, it cannot find it, resulting in an 'unresolved external symbol' error."
+  },
+  {
+    "id": "p0103",
+    "title": "Parameter Naming Mismatch",
+    "difficulty": 2,
+    "concepts": ["Function Prototype", "Parameter Names"],
+    "explanation": "This program is valid. Function declarations do not need to match the parameter names used in the definition (or even include names at all); they only need to match the parameter types and return type. In the prototype, the parameters are named `first` and `second`, but in the definition, they are `b` and `a`. The compiler maps the arguments based on position (order), not name. `subtract(10, 4)` passes 10 to the first parameter (`b`) and 4 to the second (`a`), resulting in `10 - 4 = 6`."
+  },
+  {
+    "id": "p0104",
+    "title": "ODR Violation",
+    "difficulty": 2,
+    "concepts": ["ODR", "One Definition Rule", "Compilation Error"],
+    "explanation": "This program violates part 1 of the **One Definition Rule (ODR)**: within a file, a function can only have one definition. Since `getValue` is defined twice with a body, the compiler issues a redefinition error."
+  },
+  {
+    "id": "p0105",
+    "title": "Signature Mismatch",
+    "difficulty": 3,
+    "concepts": ["Linker Error", "Function Overloading"],
+    "explanation": "This results in a **Linker Error**. \n1. The **compiler** sees the prototype `int process(int)` and the call `process(5)`, which match perfectly. It compiles `main` successfully.\n2. The **linker** then looks for the implementation of `int process(int)`.\n3. It only finds a definition for `int process(int, int)`. Since the parameter lists differ, these are considered different functions. Because the specific version `process(int)` is declared but never defined, the linker reports an unresolved external symbol."
+  },
+  {
+    "id": "p0106",
+    "title": "Anonymous Parameters",
+    "difficulty": 1,
+    "concepts": [
+      "Forward Declaration",
+      "Function Prototype",
+      "Parameter Names"
+    ],
+    "explanation": "This program is valid. Parameter names in a forward declaration are optional; only the types are required for the compiler to validate the function call signature. Using `int multiply(int, int);` correctly tells the compiler that the function takes two integers, even without naming them."
+  },
+  {
+    "id": "p0107",
+    "title": "Unseen Definition",
+    "difficulty": 2,
+    "concepts": ["Compilation Error", "Forward Declaration", "Scope"],
+    "explanation": "This results in a **Compilation Error**. The compiler processes the file sequentially. When it reaches the call `calculate(1, 2, 3)` inside `main`, the only declaration it has seen is `int calculate(int, int)`. Since the function call uses 3 arguments but the known declaration only accepts 2, the compiler cannot find a matching function signature. The definition of the 3-parameter version appearing *later* in the file is not yet visible to the compiler at the point of the call."
+  },
+  {
+    "id": "p0108",
+    "title": "Namespace islands",
+    "difficulty": 2,
+    "concepts": [
+      "namespaces",
+      "scope regions",
+      "qualified names",
+      "global namespace",
+      "scope resolution operator"
+    ],
+    "explanation": "This program defines three different identifiers named `value` in three different scope regions: the global namespace (`::value`), `alpha::value`, and `beta::value`.\n\nBecause a namespace is its own scope region, identical names in different namespaces do not collide. The scope resolution operator `::` selects which `value` you mean: `alpha::value` and `beta::value` pick the namespace members, and `::value` explicitly picks the global one."
+  },
+  {
+    "id": "p0109",
+    "title": "Two using-directives, one call",
+    "difficulty": 3,
+    "concepts": [
+      "namespaces",
+      "using-directive",
+      "ambiguity",
+      "name lookup",
+      "naming collisions"
+    ],
+    "explanation": "`A::greet()` and `B::greet()` have the same name and signature, but they live in different namespaces, so there is no collision by itself.\n\nThe problem happens after `using namespace A;` and `using namespace B;`. Now an unqualified call to `greet()` can refer to either `A::greet` or `B::greet`, and the compiler cannot disambiguate, so it issues an ambiguity error (a compile-time semantic error)."
+  },
+  {
+    "id": "p0110",
+    "title": "Executable statement in global namespace",
+    "difficulty": 2,
+    "concepts": [
+      "namespaces",
+      "global namespace",
+      "namespace scope",
+      "declarations vs statements"
+    ],
+    "explanation": "Names at global/namespace scope may contain declarations and definitions (e.g., `int x{0};`, function definitions), but not standalone executable statements.\n\n`x = 5;` is an executable assignment statement placed directly in the global namespace, so the program fails to compile with a semantic error. If you want that assignment to run, it must be inside a function (such as `main`)."
+  },
+  {
+    "id": "p0111",
+    "title": "using namespace std; meets user-defined cout",
+    "difficulty": 4,
+    "concepts": [
+      "std namespace",
+      "using-directive",
+      "ambiguity",
+      "qualified names",
+      "naming collisions"
+    ],
+    "explanation": "The using-directive `using namespace std;` makes names from `std` (including `std::cout`) usable without the `std::` prefix.\n\nThen the program defines its own `::cout` function in the global namespace. When the compiler sees `cout << \"Hi\\n\";`, the unqualified name `cout` can refer to either `std::cout` (an output stream object) or `::cout` (a function). This creates ambiguity and the program fails to compile. This illustrates why top-level using-directives are discouraged: they increase the chance of accidental name conflicts."
+  },
+  {
+    "id": "p0112",
+    "title": "Three x’s, three scopes",
+    "difficulty": 2,
+    "concepts": [
+      "scope regions",
+      "local scope",
+      "namespace scope",
+      "global namespace",
+      "scope resolution operator"
+    ],
+    "explanation": "This program has three different `x` variables in three different scope regions: a local `x` inside `main`, a namespace-scope `N::x`, and a global `::x`.\n\nUnqualified `x` inside `main` refers to the nearest (local) variable. `N::x` explicitly selects the one inside namespace `N`. `::x` explicitly selects the global variable. The scope resolution operator `::` is how you disambiguate identifiers that share the same name across scopes."
+  },
+  {
+    "id": "p0113",
+    "title": "Trailing semicolon macro",
+    "difficulty": 2,
+    "concepts": [
+      "preprocessor",
+      "define",
+      "object-like macro",
+      "macro substitution"
+    ],
+    "explanation": "This uses an object-like macro with substitution text: `#define N 5;`.\n\nThe preprocessor performs **text** substitution, so `int x = N` becomes `int x = 5;`.\n\nKey point: macros don’t understand C++ syntax; they just rewrite tokens before compilation."
+  },
+  {
+    "id": "p0114",
+    "title": "Define inside a function",
+    "difficulty": 3,
+    "concepts": [
+      "preprocessor",
+      "define scope",
+      "translation unit",
+      "directives"
+    ],
+    "explanation": "Even though `#define MSG \"hi\"` appears inside `helper()`, the preprocessor doesn’t understand functions or scopes.\n\nDirectives are processed top-to-bottom as the file is preprocessed, so `MSG` becomes defined from that point onward in the file. By the time `main()` is compiled, `MSG` is already defined, so it expands to `\"hi\"`.\n\nKey point: `#define` has *file* visibility from its definition to the end of the file (unless `#undef` is used)."
+  },
+  {
+    "id": "p0115",
+    "title": "#ifdef vs #if with a 0 macro",
+    "difficulty": 3,
+    "concepts": [
+      "conditional compilation",
+      "ifdef",
+      "if",
+      "macro substitution"
+    ],
+    "explanation": "`#ifdef FLAG` checks only whether the identifier `FLAG` is defined, not what it expands to. Since `FLAG` is defined (even as `0`), the `A` line is included.\n\n`#if FLAG` is different: `#if` performs macro substitution and then evaluates the expression. Here `FLAG` expands to `0`, which is false, so the `#else` branch prints `C`.\n\nKey point: use `#ifdef`/`#ifndef` to test *definedness*, and `#if` to test an actual numeric condition."
+  },
+  {
+    "id": "p0116",
+    "title": "#if 0 hides broken code",
+    "difficulty": 2,
+    "concepts": [
+      "conditional compilation",
+      "if 0",
+      "preprocessor",
+      "skipped blocks"
+    ],
+    "explanation": "`#if 0` tells the preprocessor to exclude the following block from the translation unit until the matching `#endif`.\n\nBecause that excluded text never reaches the compiler, even clearly invalid C++ like `int x = ;` does not cause a compile error.\n\nKey point: `#if 0` is a common way to “comment out” code blocks (including blocks that contain `/* ... */` comments)."
+  },
+  {
+    "id": "p0117",
+    "title": "Macro defined after use",
+    "difficulty": 3,
+    "concepts": [
+      "preprocessor",
+      "define order",
+      "macro substitution",
+      "conditional compilation"
+    ],
+    "explanation": "Directives are handled from top to bottom. When the preprocessor sees `std::cout << VALUE`, `VALUE` has not been defined yet, so no substitution happens.\n\nThe `#define VALUE 10` appears later, so it cannot affect earlier lines. The compiler then sees `VALUE` as a normal identifier, but it has no declaration, causing a compile-time **semantic** error (undeclared identifier).\n\nKey point: macros only apply from the point they are defined to the end of the file being preprocessed."
+  },
+  {
+    "id": "p0118",
+    "title": "Char is one byte",
+    "difficulty": 1,
+    "concepts": ["fundamental types", "byte", "sizeof", "char"],
+    "explanation": "`sizeof(T)` returns the size of a type in bytes (where a byte is the unit used for addressing). In C++, `sizeof(char)` is guaranteed to be `1`, and the same holds for `signed char` and `unsigned char` because they are character types measured in the same byte unit."
+  },
+  {
+    "id": "p0119",
+    "title": "Char output vs numeric meaning",
+    "difficulty": 2,
+    "concepts": [
+      "char",
+      "integral types",
+      "character output",
+      "integer promotion"
+    ],
+    "explanation": "`char` is an integral type, but when you stream a `char` to `std::cout`, it is treated as a character and printed as text. The expression `(c - '0')` promotes `c` and `'0'` to `int` and performs integer arithmetic; for digit characters, the difference gives the corresponding number (e.g., `'7' - '0'` is `7`)."
+  },
+  {
+    "id": "p0120",
+    "title": "Instantiating void",
+    "difficulty": 2,
+    "concepts": [
+      "void",
+      "incomplete type",
+      "object definition",
+      "compile-time error"
+    ],
+    "explanation": "`void` means “no type” and is an incomplete type on purpose. Because the compiler can’t allocate storage for “no type”, you cannot define variables of type `void`. Attempting `void item;` is ill-formed and causes a compile-time (semantic) error."
+  },
+  {
+    "id": "p0121",
+    "title": "Null terminator counts",
+    "difficulty": 2,
+    "concepts": ["sizeof", "string literal", "char array", "null terminator"],
+    "explanation": "`sizeof` returns the size of an object in bytes. A string literal like \"abcd\" has 5 characters of storage: 4 letters plus the terminating '\\0'. Initializing `char buf[]{\"abcd\"};` creates an array that also includes that terminator, so `sizeof(buf)` and `sizeof(\"abcd\")` both produce 5."
+  },
+  {
+    "id": "p0122",
+    "title": "sizeof does not evaluate",
+    "difficulty": 3,
+    "concepts": ["sizeof", "unevaluated operand", "side effects"],
+    "explanation": "The operand of `sizeof` is an *unevaluated operand*, meaning it is not executed and produces no side effects. So `n++` is not performed, and `n` stays 1. The comparison `(sizeof(n++) == sizeof(int))` is true because `n` is an `int`, so it prints `1` (true)."
+  },
+  {
+    "id": "p0123",
+    "title": "Char sizes are always 1 byte",
+    "difficulty": 1,
+    "concepts": ["sizeof", "char", "byte"],
+    "explanation": "In C++, `sizeof(char)`, `sizeof(signed char)`, and `sizeof(unsigned char)` are always `1`. This is because `char` types define the size of a byte for the platform, so they are exactly one byte by definition."
+  },
+  {
+    "id": "p0124",
+    "title": "Array element count via sizeof",
+    "difficulty": 2,
+    "concepts": ["sizeof", "array", "array length"],
+    "explanation": "`sizeof(data)` gives the total size in bytes of the whole array, and `sizeof(data[0])` gives the size of one element. Dividing them computes the number of elements. This works because `data` is an actual array in this scope (it has not decayed to a pointer)."
+  },
+  {
+    "id": "p0125",
+    "title": "Minimum bit guarantees",
+    "difficulty": 3,
+    "concepts": ["sizeof", "CHAR_BIT", "type minimum sizes", "portability"],
+    "explanation": "The standard guarantees `CHAR_BIT` is at least 8, `short` is at least 16 bits, and `long long` is at least 64 bits. Converting byte sizes to bit sizes with `sizeof(T) * CHAR_BIT` lets you write portable checks without assuming exact byte counts. Each comparison is guaranteed true, so each prints `1`."
+  },
+  {
+    "id": "p0126",
+    "title": "sizeof on incomplete type",
+    "difficulty": 2,
+    "concepts": ["sizeof", "incomplete type", "compilation error"],
+    "explanation": "`sizeof` needs the complete definition of a type to know how many bytes it occupies. `struct Mystery;` is only a forward declaration, so `Mystery` is an incomplete type. Applying `sizeof(Mystery)` is ill-formed, so the program fails to compile."
+  },
+  {
+    "id": "p0127",
+    "title": "Division truncates toward zero",
+    "difficulty": 2,
+    "concepts": ["signed integers", "integer division", "truncation"],
+    "explanation": "All operands here are integers, so C++ performs **integer** division.\n\n- `8 / 5 = 1.6`, but the fractional part is dropped, giving `1`\n- `-8 / 5 = -1.6`, and C++ truncates toward zero, giving `-1`\n- `13 / 5 = 2` remainder `3`, so the result is `2`\n- `-13 / 5 = -2.6`, truncates toward zero, giving `-2`\n\nKey idea: integer division discards the fractional portion (it does not round)."
+  },
+  {
+    "id": "p0128",
+    "title": "Same value, different signed types",
+    "difficulty": 1,
+    "concepts": [
+      "signed integers",
+      "short",
+      "int",
+      "long",
+      "long long",
+      "initialization"
+    ],
+    "explanation": "All four variables are signed integer types, just with different minimum sizes/ranges.\n\n- `a` fits in a 16-bit (or larger) signed `short`\n- Copying `a` into `int` is safe here because the value is still within range\n- `b + 100000` remains well within the minimum guaranteed range of `long` (at least 32 bits)\n- Converting that to `long long` is also safe\n\nThis prints the same numeric values, showing that the type affects the **range**, not the meaning of the stored number (as long as you stay in range)."
+  },
+  {
+    "id": "p0129",
+    "title": "Digit separators and a negative long long",
+    "difficulty": 1,
+    "concepts": [
+      "signed integers",
+      "long long",
+      "digit separators",
+      "literals"
+    ],
+    "explanation": "The apostrophes in numeric literals are digit separators; they do not change the value.\n\n- `int x{ 2'147'483 };` stores the value `2147483`\n- `long long y{ -9'000'000'000LL };` stores the value `-9000000000`; the `LL` suffix makes the literal a `long long` so it can hold a large magnitude safely\n\nSigned integers store the sign as part of the value, so negative literals work as expected."
+  },
+  {
+    "id": "p0130",
+    "title": "Signed overflow with int32_t",
+    "difficulty": 4,
+    "concepts": [
+      "signed integers",
+      "overflow",
+      "undefined behavior",
+      "int32_t"
+    ],
+    "explanation": "`std::int32_t` is a 32-bit signed integer type (when available). The value `2,147,483,647` is the maximum for a 32-bit signed integer.\n\nAfter printing that maximum, the program evaluates `x + 1`. That result is not representable in 32-bit signed range, so this is **signed** integer overflow.\n\nIn C++20 and later, signed overflow produces *undefined behavior*. That means the program might print a wrapped value, something else, or even misbehave in other ways; you cannot rely on any specific second line.",
+    "UB": true
+  },
+  {
+    "id": "p0131",
+    "title": "5-bit signed range formula",
+    "difficulty": 3,
+    "concepts": ["signed integers", "ranges", "bit count", "two's complement"],
+    "explanation": "An `n`-bit signed integer (two's complement) has range:\n\n- Minimum: \n  `-(2^{n-1})`\n- Maximum:\n  `(2^{n-1}) - 1`\n\nWith `n = 5`:\n- Minimum is \n  `-(2^4) = -16`\n- Maximum is \n  `2^4 - 1 = 15`\n\nThe program computes these using shifts (`1 << 4` equals `16`) and prints `-16 15`."
+  },
+  {
+    "id": "p0132",
+    "title": "Wrap both ways",
+    "difficulty": 2,
+    "concepts": ["unsigned", "uint16_t", "wrap-around", "modulo"],
+    "explanation": "Unsigned integers use modulo arithmetic when converting a value that doesn't fit. For a 16-bit unsigned type, values are kept modulo `2^16 = 65536`.\n\nSo `65536` becomes `0`, `65537` becomes `1`, and negative values wrap from the top: `-1` converts to `65535`, `-2` converts to `65534`. This behavior is well-defined for unsigned types."
+  },
+  {
+    "id": "p0133",
+    "title": "Unsigned subtraction surprise",
+    "difficulty": 2,
+    "concepts": ["unsigned", "uint32_t", "wrap-around", "subtraction"],
+    "explanation": "With unsigned integers, results are computed modulo `2^n`. Here `2 - 3` would be `-1` mathematically, but `-1` can't be represented as an unsigned value.\n\nFor a 32-bit unsigned integer, `-1` corresponds to `2^32 - 1 = 4294967295`, so that's what gets printed."
+  },
+  {
+    "id": "p0134",
+    "title": "Signed vs unsigned comparison",
+    "difficulty": 4,
+    "concepts": [
+      "signed-unsigned-conversion",
+      "comparison",
+      "uint32_t",
+      "int32_t"
+    ],
+    "explanation": "When a signed and an unsigned integer are compared, the signed value is typically converted to unsigned. The value `-1` converted to `std::uint32_t` becomes `4294967295`.\n\nThe comparison becomes `4294967295 < 1`, which is false, so the program prints the else branch."
+  },
+  {
+    "id": "p0135",
+    "title": "Passing -1 to an unsigned parameter",
+    "difficulty": 3,
+    "concepts": [
+      "implicit-conversion",
+      "function-parameters",
+      "uint32_t",
+      "wrap-around"
+    ],
+    "explanation": "The function takes a `std::uint32_t`. When you pass `-1` (a signed int literal), it is implicitly converted to `std::uint32_t`.\n\nThat conversion wraps modulo `2^32`, producing `4294967295`. The second call passes `5`, which converts normally and prints `5`."
+  },
+  {
+    "id": "p0136",
+    "title": "Decrementing an 8-bit unsigned",
+    "difficulty": 3,
+    "concepts": ["uint8_t", "wrap-around", "decrement", "modulo"],
+    "explanation": "A `std::uint8_t` holds values `0` to `255`. Decrementing `0` can't produce `-1`, so it wraps around to `255` (modulo `256`). Decrementing again yields `254`.\n\nThe cast to `int` is needed because `std::uint8_t` often behaves like an `unsigned char` when sent to streams, which would otherwise print a character instead of a number."
+  },
+  {
+    "id": "p0137",
+    "title": "List initialization catches narrowing",
+    "difficulty": 2,
+    "concepts": [
+      "list-initialization",
+      "narrowing",
+      "uint16_t",
+      "compile-error"
+    ],
+    "explanation": "Brace initialization forbids narrowing conversions. The literal `65536` does not fit in a 16-bit unsigned integer (max `65535`).\n\nBecause the value can't be represented, the compiler must reject the program rather than silently wrapping or truncating the value."
+  },
+  {
+    "id": "p0138",
+    "title": "Byte-sized integer prints like a character",
+    "difficulty": 2,
+    "concepts": [
+      "fixed-width-integers",
+      "int8_t",
+      "uint8_t",
+      "char-behavior",
+      "static_cast",
+      "iostream"
+    ],
+    "explanation": "On most systems, `std::int8_t` is an alias for `signed char` (not a distinct “small int” type). Because `operator<<` treats `char`-like types as characters, printing an `std::int8_t` often prints a glyph (here `65` becomes `'A'`) rather than the number.\n\nCasting to `int` forces numeric output: `static_cast<int>(a)` prints `65`."
+  },
+  {
+    "id": "p0139",
+    "title": "Unsigned 8-bit wraparound",
+    "difficulty": 3,
+    "concepts": [
+      "fixed-width-integers",
+      "uint8_t",
+      "unsigned-wraparound",
+      "type-conversion",
+      "static_cast"
+    ],
+    "explanation": "`std::uint8_t` is an 8-bit unsigned type with values in the range `0` to `255`. Unsigned arithmetic is defined to wrap modulo `256` when it overflows.\n\n`250 + 10` is `260`, and `260 mod 256 = 4`, so the stored value becomes `4`. Casting to `int` ensures it prints as a number rather than a character."
+  },
+  {
+    "id": "p0140",
+    "title": "size_t underflow stays unsigned",
+    "difficulty": 3,
+    "concepts": [
+      "size_t",
+      "sizeof",
+      "unsigned-integers",
+      "underflow",
+      "conversions"
+    ],
+    "explanation": "`std::size_t` is an implementation-defined unsigned integer type. When `n` is `0`, the expression `n - 1` underflows, and because the type is unsigned, it wraps to the maximum representable `std::size_t` value.\n\nThat wrapped value is greater than `0`, so `(n - 1 > n)` prints `1`. Casting `-1` to `std::size_t` also yields the maximum value, so the equality comparison prints `1` as well."
+  },
+  {
+    "id": "p0141",
+    "title": "Signed vs size_t comparison surprise",
+    "difficulty": 4,
+    "concepts": [
+      "size_t",
+      "signed-vs-unsigned",
+      "usual-arithmetic-conversions",
+      "comparisons"
+    ],
+    "explanation": "The first comparison `(i < 1)` compares two `int`s, so `-1 < 1` is true and prints `1`.\n\nIn `(i < s)`, `s` is `std::size_t` (unsigned). The usual arithmetic conversions convert `i` to an unsigned type before comparing, so `-1` becomes a very large unsigned value. A very large value is not less than `2`, so the expression is false and prints `0`."
+  },
+  {
+    "id": "p0142",
+    "title": "Fixed-width sizes are fixed",
+    "difficulty": 1,
+    "concepts": ["fixed-width-integers", "cstdint", "sizeof", "portability"],
+    "explanation": "Fixed-width integer types such as `std::int32_t` and `std::uint64_t` are specified to be exactly 32 bits and 64 bits when they exist. That means their sizes in bytes are fixed at `4` and `8` respectively.\n\nSo `sizeof(std::int32_t)` prints `4` and `sizeof(std::uint64_t)` prints `8` on any architecture that provides these fixed-width types."
+  },
+  {
+    "id": "p0143",
+    "title": "E notation basics",
+    "difficulty": 1,
+    "concepts": [
+      "scientific-notation",
+      "floating-literal",
+      "e-notation",
+      "negative-exponent",
+      "iostream"
+    ],
+    "explanation": "In C++, scientific notation literals use `e`/`E` to mean \"times 10 to the power of\".\n\n- `1.2e4` means `1.2 * 10^4`.\n- `5e-2` means `5 * 10^-2`, which is the same as `5 / 10^2`.\n\nThese are floating-point literals, so they have type `double` by default."
+  },
+  {
+    "id": "p0144",
+    "title": "Same value, different formatting",
+    "difficulty": 2,
+    "concepts": [
+      "trailing-zeros",
+      "precision",
+      "iostream",
+      "iomanip",
+      "fixed",
+      "setprecision"
+    ],
+    "explanation": "The literals `87.0` and `87.000` convey different measurement precision conceptually, but once stored in a `double`, they both just store the value 87.\n\n`std::fixed` + `std::setprecision(n)` controls how many digits are printed after the decimal point, not what is stored. So changing the stream formatting can make the same stored value display with different numbers of trailing zeros."
+  },
+  {
+    "id": "p0145",
+    "title": "Printing in scientific form",
+    "difficulty": 2,
+    "concepts": [
+      "scientific-notation",
+      "iostream",
+      "iomanip",
+      "scientific",
+      "setprecision"
+    ],
+    "explanation": "`std::scientific` switches `std::cout` to scientific-notation formatting.\n\nWith `std::scientific`, `std::setprecision(3)` sets the number of digits after the decimal point in the printed significand (so you’ll see three fractional digits in the mantissa)."
+  },
+  {
+    "id": "p0146",
+    "title": "e and E are equivalent",
+    "difficulty": 1,
+    "concepts": [
+      "e-notation",
+      "E-notation",
+      "floating-literal",
+      "comparison",
+      "iostream"
+    ],
+    "explanation": "C++ allows either `e` or `E` in scientific-notation literals, and they mean the same thing.\n\nSo `1e2` and `1E2` produce identical `double` values, and comparisons/arithmetic treat them the same."
+  },
+  {
+    "id": "p0147",
+    "title": "Braces catch narrowing",
+    "difficulty": 3,
+    "concepts": [
+      "braced-initialization",
+      "narrowing-conversion",
+      "scientific-notation",
+      "floating-to-int"
+    ],
+    "explanation": "`1e2` is a floating-point literal (a `double`).\n\nList-initialization with braces (`int n{ ... };`) forbids narrowing conversions, and converting a `double` to `int` is considered narrowing. Therefore this is ill-formed and results in a compile-time (semantic) error."
+  },
+  {
+    "id": "p0148",
+    "title": "Missing exponent digits",
+    "difficulty": 2,
+    "concepts": ["scientific-notation", "floating-literal", "syntax"],
+    "explanation": "A scientific-notation literal must have digits in the exponent if `e`/`E` is present.\n\n`1.2e` is not a valid floating-point literal token, so the program fails to compile due to a syntax/lexing-related error."
+  },
+  {
+    "id": "p0149",
+    "title": "Reading scientific notation",
+    "difficulty": 2,
+    "concepts": [
+      "scientific-notation",
+      "input",
+      "iostream",
+      "iomanip",
+      "fixed",
+      "setprecision"
+    ],
+    "explanation": "Formatted input for floating-point types (like `double`) understands scientific notation such as `5e-2`.\n\nAfter reading the value, `std::fixed` and `std::setprecision(2)` make the output show exactly two digits after the decimal point.",
+    "stdin": "5e-2\n"
   }
 ]
