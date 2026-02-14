@@ -1435,5 +1435,1656 @@
     ],
     "explanation": "Formatted input for floating-point types (like `double`) understands scientific notation such as `5e-2`.\n\nAfter reading the value, `std::fixed` and `std::setprecision(2)` make the output show exactly two digits after the decimal point.",
     "stdin": "5e-2\n"
+  },
+  {
+    "id": "p0150",
+    "title": "Default precision surprises",
+    "difficulty": 2,
+    "concepts": [
+      "floating-point",
+      "cout-default-format",
+      "precision",
+      "significant-digits"
+    ],
+    "explanation": "Floating-point literals like 5.0 and 98765.4321 are printed using iostream's default formatting (general format) with a default precision of 6 significant digits.\n\nTwo surprises happen here: `5.0` prints as `5` because iostream doesn't show a fractional part when it is zero, and `98765.4321` gets rounded/truncated to 6 significant digits, becoming `98765.4`."
+  },
+  {
+    "id": "p0151",
+    "title": "0.1 under a microscope",
+    "difficulty": 3,
+    "concepts": ["rounding-error", "setprecision", "double", "binary-fraction"],
+    "explanation": "Many decimal fractions (like 0.1) cannot be represented exactly in binary floating-point. The stored value is a nearby approximation.\n\nWith the default stream precision, the approximation rounds to `0.1`. After `std::setprecision(17)`, `std::cout` prints more significant digits, revealing the tiny rounding error: `0.10000000000000001`."
+  },
+  {
+    "id": "p0152",
+    "title": "Significant digits vs fixed decimals",
+    "difficulty": 3,
+    "concepts": ["setprecision", "fixed", "significant-digits", "rounding"],
+    "explanation": "`std::setprecision(n)` normally sets the number of significant digits printed (in the default float format).\n\nWhen you add `std::fixed`, `setprecision(n)` instead means “print exactly n digits after the decimal point”. That’s why the same number prints as `12.3` (3 significant digits) and then `12.346` (3 digits after the decimal, rounded)."
+  },
+  {
+    "id": "p0153",
+    "title": "Sticky formatting",
+    "difficulty": 2,
+    "concepts": ["iostream-manipulators", "sticky", "fixed", "setprecision"],
+    "explanation": "Output manipulators like `std::fixed` and `std::setprecision()` are sticky: once set on a stream, they affect all later floating-point output on that stream.\n\nWith `fixed` and one digit after the decimal, `1.0/2.0` prints as `0.5` and `1.0/3.0` prints as `0.3` (rounded to one decimal place)."
+  },
+  {
+    "id": "p0154",
+    "title": "Float precision cliff",
+    "difficulty": 4,
+    "concepts": [
+      "float-precision",
+      "significant-digits",
+      "rounding-error",
+      "IEEE-754"
+    ],
+    "explanation": "A typical IEEE 754 `float` has about 24 bits of precision (including the hidden leading bit). Past a certain magnitude, not every integer is representable.\n\n`16777216` (2^24) is representable, but `16777217` is not, so the stored `float` rounds to `16777216`. Printing with `fixed` and 0 decimal places makes this visible."
+  },
+  {
+    "id": "p0155",
+    "title": "Toggle and print modes",
+    "difficulty": 2,
+    "concepts": [
+      "bool",
+      "logical not",
+      "cout",
+      "boolalpha",
+      "noboolalpha",
+      "default-initialization"
+    ],
+    "explanation": "By default, streaming a `bool` prints `0` (false) or `1` (true).\n\n- `bool b{}` default-initializes to `false`.\n- The logical NOT operator `!` flips a boolean value.\n- `std::boolalpha` changes *output formatting* so `true/false` are printed instead of `1/0`.\n- `std::noboolalpha` restores the default `1/0` formatting.\n\nSo the program prints once in numeric form, once in `true/false` form, then returns to numeric again."
+  },
+  {
+    "id": "p0156",
+    "title": "Uniform init narrowing trap",
+    "difficulty": 3,
+    "concepts": [
+      "bool",
+      "uniform initialization",
+      "narrowing conversion",
+      "compile error"
+    ],
+    "explanation": "List (uniform) initialization with `{}` disallows narrowing conversions.\n\n- `bool a{ 1 };` is allowed because `1` is a valid boolean literal value (true).\n- `bool b{ 2 };` is **ill-formed** because `2` would need to be narrowed to either `0` or `1`.\n\nThis fails to compile, so the correct choice is a compile-time error."
+  },
+  {
+    "id": "p0157",
+    "title": "Copy init int-to-bool surprises",
+    "difficulty": 2,
+    "concepts": [
+      "bool",
+      "copy initialization",
+      "implicit conversion",
+      "boolalpha"
+    ],
+    "explanation": "With copy initialization (`=`), integers can implicitly convert to `bool`.\n\n- `0` converts to `false`.\n- Any non-zero integer (positive or negative) converts to `true`.\n\nBecause `std::boolalpha` is enabled for output, the program prints `false true true`."
+  },
+  {
+    "id": "p0158",
+    "title": "Input bool without boolalpha",
+    "difficulty": 4,
+    "concepts": [
+      "bool",
+      "cin",
+      "input",
+      "failure mode",
+      "boolalpha",
+      "stream state"
+    ],
+    "stdin": "true\n",
+    "explanation": "By default, `std::cin >> b` for a `bool` expects **numeric** input.\n\n- `0` means false, `1` means true.\n- If the user types a non-numeric token like `true`, extraction fails, the stream enters failure mode, and the variable is set to `false`.\n\nThen `std::cout << std::boolalpha` makes the output show `false` rather than `0`."
+  },
+  {
+    "id": "p0159",
+    "title": "boolalpha affects input too",
+    "difficulty": 5,
+    "concepts": [
+      "bool",
+      "cin",
+      "boolalpha",
+      "input formatting",
+      "failure mode",
+      "stream extraction"
+    ],
+    "stdin": "true 0\n",
+    "explanation": "When `std::boolalpha` is enabled for **input**, extracting into a `bool` expects the words `true` or `false` (lowercase).\n\n- The first token `true` is accepted, so `a` becomes `true`.\n- The next token is `0`, which is **not accepted** in `boolalpha` mode, so extraction fails and the stream enters failure mode.\n- On this failed formatted extraction, the destination `bool` ends up as `false`.\n\nWith `std::boolalpha` enabled for output, the program prints `true false`."
+  },
+  {
+    "id": "p0160",
+    "title": "Single statement surprise",
+    "difficulty": 2,
+    "concepts": [
+      "if-statement",
+      "single-statement",
+      "indentation-trap",
+      "control-flow"
+    ],
+    "explanation": "In C++, an `if` without braces controls only the next single statement.\n\nHere, only `std::cout << \"P\";` is conditional. The following `std::cout << \"Q\\n\";` is a separate statement, so it runs regardless of whether `x > 0` is true.\n\nWith a negative input, `x > 0` is false, so `P` is skipped and you only see `Q`.",
+    "stdin": "-3\n"
+  },
+  {
+    "id": "p0161",
+    "title": "Else attaches to what?",
+    "difficulty": 3,
+    "concepts": ["if-else", "dangling-else", "nesting", "condition"],
+    "explanation": "An `else` is always matched with the nearest preceding unmatched `if`.\n\nSo the `else` here belongs to `if (x % 2 == 0)`, not to `if (x > 0)`.\n\nWith input `3`, `x > 0` is true, then `x % 2 == 0` is false, so the `else` runs and prints `odd`.",
+    "stdin": "3\n"
+  },
+  {
+    "id": "p0162",
+    "title": "Chained conditions",
+    "difficulty": 1,
+    "concepts": ["if-else", "else-if-chain", "comparison-operators"],
+    "explanation": "An `if` / `else if` / `else` chain checks conditions in order.\n\n- If `x > 0`, it prints `A`.\n- Otherwise, if `x < 0`, it prints `B`.\n- Otherwise (meaning neither greater nor less), `x` must be `0`, so it prints `C`.\n\nOnly one branch in the chain executes.",
+    "stdin": "0\n"
+  },
+  {
+    "id": "p0163",
+    "title": "Non-boolean conditional",
+    "difficulty": 2,
+    "concepts": [
+      "if-statement",
+      "non-boolean-conditional",
+      "implicit-bool-conversion"
+    ],
+    "explanation": "The condition of an `if` is converted to `bool` if it isn’t already.\n\nFor integers, `0` becomes `false` and any non-zero value becomes `true`.\n\nSo `if (x)` is a common shorthand for “if `x` is non-zero”. With input `0`, the condition is false and the `else` branch prints `F`.",
+    "stdin": "0\n"
+  },
+  {
+    "id": "p0164",
+    "title": "Early return path",
+    "difficulty": 2,
+    "concepts": ["early-return", "if-statement", "function-return"],
+    "explanation": "A `return` that occurs before the last statement of a function is an early return.\n\nIn `f`, when `x < 0` is true, the function returns `10` immediately and skips the later `return 20;`.\n\nWhen `x` is not negative, the `if` body is skipped and execution reaches the final `return 20;`."
+  },
+  {
+    "id": "p0165",
+    "title": "The stray semicolon",
+    "difficulty": 4,
+    "concepts": ["if-statement", "syntax-gotcha", "null-statement", "else"],
+    "explanation": "The semicolon right after `if (x == 0)` creates a null statement as the `if` body.\n\nAfter that, `std::cout << \"Z\\n\";` is no longer part of the `if`—it becomes an unconditional statement.\n\nBecause the `if` statement is already complete, the following `else` has no matching `if`, which causes a compilation failure (reported here as a semantic error).",
+    "stdin": "5\n"
+  },
+  {
+    "id": "p0166",
+    "title": "Character vs number",
+    "difficulty": 2,
+    "concepts": [
+      "char",
+      "ASCII",
+      "character-literal",
+      "integral-type",
+      "static_cast"
+    ],
+    "explanation": "A `char` stores a small integer value, but when you stream a `char` to `std::cout`, it is typically interpreted as an ASCII character.\n\n`'5'` is a character literal whose ASCII code is 53, while `5` is the integer value 5 stored inside a `char`.\n\nCasting to `int` (e.g. `static_cast<int>(asChar)`) shows the underlying numeric code point."
+  },
+  {
+    "id": "p0167",
+    "title": "Two extractions, one input",
+    "difficulty": 2,
+    "concepts": ["char", "std::cin", "operator>>", "input-buffer"],
+    "explanation": "`std::cin >> ch` extracts only one character into `ch`.\n\nIf the user types multiple characters (like `abcd`), the first extraction takes `a`, and the remaining characters stay queued in the input buffer.\n\nThe second extraction does not ask for more input; it immediately extracts the next queued character (`b`).",
+    "stdin": "abcd\n"
+  },
+  {
+    "id": "p0168",
+    "title": "Whitespace is skipped",
+    "difficulty": 3,
+    "concepts": ["char", "std::cin", "operator>>", "whitespace-skipping"],
+    "explanation": "For formatted extraction (`operator>>`), `std::cin` skips leading whitespace (spaces, tabs, newlines).\n\nSo after reading `a`, the next extraction skips the space and reads `b`.\n\nThis is why you don’t get the space character when using `>>` with `char`.",
+    "stdin": "a b\n"
+  },
+  {
+    "id": "p0169",
+    "title": "get() keeps whitespace",
+    "difficulty": 3,
+    "concepts": ["char", "std::cin.get", "whitespace", "input-buffer"],
+    "explanation": "`std::cin.get(ch)` extracts the next character exactly as-is, including whitespace.\n\nWith input `a b`, the first `get()` reads `a`, the second reads the space, and the third reads `b`.\n\nUsing brackets in the output makes the space visible as `[ ]`."
+  },
+  {
+    "id": "p0170",
+    "title": "Escapes in strings",
+    "difficulty": 2,
+    "concepts": [
+      "escape-sequence",
+      "string-literal",
+      "backslash",
+      "quote",
+      "hex-escape"
+    ],
+    "explanation": "Escape sequences start with a backslash `\\` and let you embed special characters inside string literals.\n\n`\\\"` prints a double quote, `\\\\` prints a single backslash, and `\\x6F` inserts the character whose hex code is `6F` (which is `o` in ASCII).\n\nEach `\\n` moves output to the next line."
+  },
+  {
+    "id": "p0171",
+    "title": "Signed vs unsigned char",
+    "difficulty": 3,
+    "concepts": ["signed-char", "unsigned-char", "range", "static_cast"],
+    "explanation": "`char` is 1 byte, and whether plain `char` is signed or unsigned is implementation-defined.\n\n`signed char` and `unsigned char` make the signedness explicit: `signed char` can represent negative values like `-1`, while `unsigned char` can represent values up to 255.\n\nCasting to `int` before printing avoids printing them as characters and shows the stored numeric values."
+  },
+  {
+    "id": "p0172",
+    "title": "\"/n\" is not a newline",
+    "difficulty": 2,
+    "concepts": [
+      "newline",
+      "escape-sequence",
+      "string-literal",
+      "character-literal"
+    ],
+    "explanation": "`'\\n'` is the newline escape sequence (a single character).\n\n`\"/n\"` is just a two-character string containing a slash and the letter `n`, so it prints literally as `/n`.\n\nThis is a common typo when someone meant to write a newline escape."
+  },
+  {
+    "id": "p0173",
+    "title": "Double quotes are not a char",
+    "difficulty": 2,
+    "concepts": [
+      "char",
+      "character-literal",
+      "string-literal",
+      "list-initialization"
+    ],
+    "explanation": "`'a'` is a character literal (type `char`), but `\"a\"` is a string literal (an array of characters).\n\nList-initializing a `char` with a string literal (`char ch{ \"a\" };`) is ill-formed because a `char` can hold only one character, not a string.\n\nSo the program fails to compile with a semantic (type) error."
+  },
+  {
+    "id": "p0174",
+    "title": "Implicit int to double",
+    "difficulty": 2,
+    "concepts": ["implicit conversion", "int to double", "function argument"],
+    "explanation": "The function parameter is a `double`, but the argument is an `int`.\n\nC++ performs an **implicit type conversion**: it converts the `int` value `5` into a temporary `double` value `5.0`, then copies that into `x`.\n\nWhen `std::cout` prints a floating-point value with a `.0` fractional part, it typically prints without the decimal part, so `5.0` displays as `5`."
+  },
+  {
+    "id": "p0175",
+    "title": "Explicit double to int",
+    "difficulty": 2,
+    "concepts": [
+      "explicit conversion",
+      "static_cast",
+      "double to int",
+      "fraction dropped"
+    ],
+    "explanation": "`static_cast<int>(5.9)` explicitly requests conversion of the `double` value to an `int`.\n\nWhen converting floating-point to an integer type, the fractional part is discarded (no rounding), so `5.9` becomes `5`.\n\nBecause the conversion is explicit, compilers generally do not warn about possible loss of data here."
+  },
+  {
+    "id": "p0176",
+    "title": "Brace narrowing fails",
+    "difficulty": 3,
+    "concepts": [
+      "brace initialization",
+      "narrowing conversion",
+      "double to int",
+      "compile error"
+    ],
+    "explanation": "Brace initialization (`{}`) forbids **narrowing conversions**.\n\nConverting `5.5` (a `double`) to `int` would drop the fractional part, which can lose information.\n\nSo `int x{ 5.5 };` is ill-formed, and the program fails to compile."
+  },
+  {
+    "id": "p0177",
+    "title": "Cast makes a new value",
+    "difficulty": 2,
+    "concepts": ["static_cast", "temporary result", "value not modified"],
+    "explanation": "`static_cast<int>(v)` converts the *value* of `v` into a new temporary `int`.\n\nThat temporary integer is printed first, so `3.7` becomes `3`.\n\nThe original variable `v` is unchanged by the cast, so printing `v` afterward still prints `3.7`."
+  },
+  {
+    "id": "p0178",
+    "title": "Char printed two ways",
+    "difficulty": 2,
+    "concepts": ["char output", "static_cast", "char to int"],
+    "explanation": "Streaming a `char` to `std::cout` prints it as a character.\n\n`static_cast<int>(c)` converts the character value to an `int`, so `std::cout` prints the numeric code point instead.\n\nThe cast does not change `c`; it only converts `c`'s value for that expression."
+  },
+  {
+    "id": "p0179",
+    "title": "Signed to unsigned wrap",
+    "difficulty": 4,
+    "concepts": [
+      "static_cast",
+      "signed to unsigned",
+      "modulo wrapping",
+      "fixed-width integers"
+    ],
+    "explanation": "Here `s` is a 32-bit signed integer holding `-1`.\n\nWhen converting a signed integer to an unsigned integer, the result is taken modulo 2^32 (for `std::uint32_t`).\n\nSo `-1` becomes `2^32 - 1`, which is `4294967295`."
+  },
+  {
+    "id": "p0180",
+    "title": "int8_t as an integer",
+    "difficulty": 3,
+    "concepts": ["std::int8_t", "char-like behavior", "static_cast"],
+    "explanation": "On many systems, `std::int8_t` behaves like `signed char` when sent to `std::cout`.\n\nCasting with `static_cast<int>(v)` forces the value to be treated as an integer type for output.\n\nThat ensures the numeric value `65` is printed rather than a character."
+  },
+  {
+    "id": "p0181",
+    "title": "Read char and print code",
+    "difficulty": 3,
+    "concepts": ["input", "char", "static_cast", "ASCII code"],
+    "explanation": "The program prints a prompt, reads one `char`, then prints the character and its numeric code.\n\n`static_cast<int>(c)` converts the `char` value to an `int` so it prints as a number.\n\nThe prompt is part of stdout, so it appears in the expected output before the printed character and code.",
+    "stdin": "a\n"
+  },
+  {
+    "id": "p0182",
+    "title": "Member Initialization Order",
+    "difficulty": 2,
+    "concepts": [
+      "constructors",
+      "member-initializer-list",
+      "initialization-order"
+    ],
+    "explanation": "Class members are **initialized in the order they are declared inside the class**, not the order written in the constructor’s member-initializer list.\n\nSo even though `b('b')` appears before `a('a')` in `A()`'s initializer list, `a` is still constructed first (because `a` is declared first), then `b`."
+  },
+  {
+    "id": "p0183",
+    "title": "Ref-Qualified Overloads",
+    "difficulty": 3,
+    "concepts": [
+      "overload-resolution",
+      "ref-qualifiers",
+      "std-move",
+      "value-categories"
+    ],
+    "explanation": "Member functions can be ref-qualified:\n- `f() &` is selected when the object expression is an lvalue.\n- `f() &&` is selected when the object expression is an rvalue.\n\n`std::move(s)` turns `s` into an xvalue, so the `&&` overload is called the second time."
+  },
+  {
+    "id": "p0184",
+    "title": "Template vs Non-Template",
+    "difficulty": 4,
+    "concepts": [
+      "function-templates",
+      "overload-resolution",
+      "conversions",
+      "promotions"
+    ],
+    "explanation": "When both a non-template overload and a function template are viable, overload resolution still chooses the **best match**.\n\nFor a `short` argument, `g(T)` with `T=short` is an exact match, while `g(int)` requires an integral promotion, so the template wins.\n\nFor an `int` argument (`0` is an `int` literal here), both are exact matches, and the non-template overload is preferred."
+  },
+  {
+    "id": "p0185",
+    "title": "Unique Ownership Move",
+    "difficulty": 2,
+    "concepts": [
+      "move-semantics",
+      "unique_ptr",
+      "std-move",
+      "resource-ownership"
+    ],
+    "explanation": "`std::unique_ptr` models exclusive ownership and is movable but not copyable.\n\nAfter `q = std::move(p)`, the resource is transferred into `q` and `p` becomes empty (null). Testing `p` and `q` in a boolean context shows which pointer still owns the resource."
+  },
+  {
+    "id": "p0186",
+    "title": "constexpr-if Discards Code",
+    "difficulty": 3,
+    "concepts": [
+      "if-constexpr",
+      "templates",
+      "type-traits",
+      "compile-time-branching"
+    ],
+    "explanation": "`if constexpr` performs compile-time branching.\n\nIn a template, the non-taken branch is discarded and is not instantiated, which allows you to write code that would be ill-formed for some `T` as long as that branch is never chosen for that `T`.\n\nHere, pointer types use `*t`, while non-pointer types use `t + 1`."
+  },
+  {
+    "id": "p0187",
+    "title": "Braced Init Sequencing",
+    "difficulty": 4,
+    "concepts": [
+      "evaluation-order",
+      "braced-init-list",
+      "sequencing",
+      "side-effects"
+    ],
+    "explanation": "Within a braced-init-list, the initializer clauses are evaluated in the order they appear (left to right).\n\nThe lambda prints the current value of `i` and then post-increments it. Because the calls are sequenced left-to-right, the printed digits and the final `i` are deterministic."
+  },
+  {
+    "id": "p0188",
+    "title": "Dangling Reference",
+    "difficulty": 4,
+    "concepts": [
+      "lifetime",
+      "dangling-reference",
+      "return-by-reference",
+      "undefined-behavior"
+    ],
+    "explanation": "The function returns a reference to a local `std::string`.\n\nThat local object is destroyed when the function returns, so the reference becomes dangling. Using it (streaming it to `std::cout`) triggers undefined behavior: the program might print garbage, appear to work, or crash.",
+    "UB": true
+  },
+  {
+    "id": "p0189",
+    "title": "Bad Reference Binding",
+    "difficulty": 2,
+    "concepts": [
+      "references",
+      "temporary-objects",
+      "initialization",
+      "compile-error"
+    ],
+    "explanation": "A non-const lvalue reference (`int&`) cannot bind to a temporary (rvalue) like the literal `1`.\n\nOnly `const int&` (or `int&&`) can bind to such a value, so this program is ill-formed and fails to compile."
+  },
+  {
+    "id": "p0190",
+    "title": "Most Vexing Member Call",
+    "difficulty": 3,
+    "concepts": [
+      "most-vexing-parse",
+      "declarations",
+      "parsing",
+      "member-access"
+    ],
+    "explanation": "`S x(T());` is parsed as a **function declaration**, not as a variable definition.\n\nIt declares a function named `x` that returns `S` and takes one parameter: a pointer to a function returning `T`.\n\nBecause `x` is a function (not an object), `x.m()` is ill-formed, producing a compile-time (semantic) error. Using braces (`S x{T{}};`) or extra parentheses can avoid this ambiguity."
+  },
+  {
+    "id": "p0191",
+    "title": "Guaranteed Elision With Deleted Move",
+    "difficulty": 4,
+    "concepts": [
+      "copy-elision",
+      "C++17",
+      "prvalue",
+      "deleted-functions",
+      "lifetime"
+    ],
+    "explanation": "In C++17 and later, initializing an object from a prvalue of the same type uses **guaranteed copy elision**: no move/copy constructor is required.\n\nSo `return Z();` and `Z obj = make();` still compile even though both the copy and move constructors are deleted.\n\nThe constructor prints `'1'`, then main prints `'3'` and a newline, and finally the destructor prints `'2'` at the end of `main`."
+  },
+  {
+    "id": "p0192",
+    "title": "Virtual Call In Base Ctor",
+    "difficulty": 4,
+    "concepts": [
+      "virtual-functions",
+      "constructors",
+      "dynamic-dispatch",
+      "object-lifetime"
+    ],
+    "explanation": "A virtual call made from a base class constructor does **not** dispatch to the derived override.\n\nDuring `A`'s constructor, the object is still being constructed as an `A` subobject, so `A::f()` is called.\n\nAfter construction finishes, calling `obj.f()` from `main` dispatches normally and calls `B::f()`."
+  },
+  {
+    "id": "p0193",
+    "title": "ADL Picks Namespace Function",
+    "difficulty": 4,
+    "concepts": [
+      "ADL",
+      "unqualified-lookup",
+      "namespaces",
+      "overload-resolution"
+    ],
+    "explanation": "The call `h(s)` is **unqualified** (no `N::`), so normal unqualified lookup finds `::h(int)`.\n\nArgument-Dependent Lookup (ADL) also considers functions in the associated namespace(s) of the argument type, so it adds `N::h(N::S)` to the candidate set.\n\nOverload resolution then picks `N::h(N::S)` for `h(s)` and picks `::h(int)` for `h(0)`."
+  },
+  {
+    "id": "p0194",
+    "title": "decltype(auto) Reference Return",
+    "difficulty": 4,
+    "concepts": [
+      "decltype(auto)",
+      "auto",
+      "return-type-deduction",
+      "references",
+      "value-categories"
+    ],
+    "explanation": "`decltype(auto)` deduces the return type using `decltype` rules, which preserve references.\n\nBecause `r()` returns `(x)` (a parenthesized lvalue expression), `decltype((x))` is `int&`, so `r()` returns a reference and `r() = 5;` modifies the global `x`.\n\nBy contrast, `auto v()` deduces `int` (copies the value), so `v()` returns by value."
+  },
+  {
+    "id": "p0195",
+    "title": "Lambda Capture Mutability",
+    "difficulty": 3,
+    "concepts": ["lambdas", "captures", "mutable", "by-value", "by-reference"],
+    "explanation": "A lambda that captures by value (`[=]`) stores its own copy of captured variables.\n\nWithout `mutable`, that copy is treated as const inside the lambda body; with `mutable`, the lambda can modify its internal copy.\n\nA lambda that captures by reference (`[&]`) modifies the original variable, so changes inside the lambda affect `x` in `main`."
+  },
+  {
+    "id": "p0196",
+    "title": "string_view From Temporary",
+    "difficulty": 5,
+    "concepts": [
+      "lifetime",
+      "dangling-reference",
+      "string_view",
+      "temporaries",
+      "undefined-behavior"
+    ],
+    "explanation": "`std::string_view` is a non-owning view of a character sequence.\n\n`std::string_view v = std::string(\"x\");` makes `v` point into a **temporary** `std::string` that is destroyed at the end of the full-expression.\n\nAfter that, `v` dangles, and printing it uses invalid memory, which is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0197",
+    "title": "initializer_list Overload Preference",
+    "difficulty": 3,
+    "concepts": [
+      "initializer_list",
+      "overload-resolution",
+      "list-initialization",
+      "constructors"
+    ],
+    "explanation": "When you use braced initialization (`{}`), constructors taking `std::initializer_list` are given special preference if they are viable.\n\nSo `S b{1};` selects `S(std::initializer_list<int>)` rather than `S(int)`.\n\nParentheses (`S a(1);`) do not participate in `initializer_list` preference, so they call `S(int)` here."
+  },
+  {
+    "id": "p0198",
+    "title": "Temporary Lifetime Extension",
+    "difficulty": 3,
+    "concepts": [
+      "temporary-lifetime",
+      "const-reference",
+      "destructors",
+      "full-expression"
+    ],
+    "explanation": "Binding a temporary to a local `const T&` **extends the temporary’s lifetime** to match the reference’s lifetime (here: until the end of `main`).\n\nSo the temporary `S()` is constructed first (printing `'a'`). Then `main` prints `'c'` and a newline. Only when leaving `main` does `r` go out of scope, and the temporary is destroyed (printing `'b'`)."
+  },
+  {
+    "id": "p0199",
+    "title": "explicit Blocks Implicit Conversion",
+    "difficulty": 2,
+    "concepts": [
+      "explicit",
+      "constructors",
+      "implicit-conversion",
+      "overload-resolution"
+    ],
+    "explanation": "A single-argument constructor can be used for implicit conversions in function calls.\n\nMarking it `explicit` disables that implicit conversion. `f(1)` would require converting `1` to `S`, but that is not allowed with an explicit constructor, so the program is ill-formed (compile-time semantic error).\n\nFixes include `f(S{1});` or removing `explicit` (only if implicit conversion is intended)."
+  },
+  {
+    "id": "p0200",
+    "title": "vector Parens vs Braces",
+    "difficulty": 3,
+    "concepts": [
+      "list-initialization",
+      "initializer_list",
+      "overload-resolution",
+      "std-vector"
+    ],
+    "explanation": "`std::vector<int> a(3, 1)` uses the “count/value” constructor: it creates 3 elements, each equal to 1.\n\n`std::vector<int> b{3, 1}` uses list-initialization, which prefers an `initializer_list` constructor when viable, so it creates a vector with exactly the elements `{3, 1}`.\n\nThat’s why their sizes differ."
+  },
+  {
+    "id": "p0201",
+    "title": "Structured Bindings Copy vs Ref",
+    "difficulty": 4,
+    "concepts": [
+      "structured-bindings",
+      "references",
+      "arrays",
+      "copy-vs-reference"
+    ],
+    "explanation": "`auto [x, y] = a;` creates a structured binding that **copies** from the array elements into `x` and `y`.\n\n`auto& [r1, r2] = a;` binds `r1` and `r2` as references to the actual array elements.\n\nAfter `r1 = 7;`, the array changes, but the previously-copied `x` and `y` keep their original values."
+  },
+  {
+    "id": "p0202",
+    "title": "nullptr Chooses Pointer Overload",
+    "difficulty": 3,
+    "concepts": ["nullptr", "overload-resolution", "null-pointer", "literals"],
+    "explanation": "`0` is an `int` literal, so `f(0)` matches `f(int)` exactly.\n\n`nullptr` has type `std::nullptr_t` and converts to pointer types, but it does not implicitly convert to `int`. Therefore `f(nullptr)` selects the pointer overload `f(const char*)`.\n\nThis is one reason `nullptr` is safer than using `0`/`NULL` for pointers."
+  },
+  {
+    "id": "p0203",
+    "title": "Object Slicing In vector",
+    "difficulty": 4,
+    "concepts": [
+      "object-slicing",
+      "polymorphism",
+      "virtual-functions",
+      "std-vector"
+    ],
+    "explanation": "`std::vector<B>` stores objects of type `B` **by value**.\n\nWhen you `push_back(D{})`, the `D` object is converted to a `B` subobject and the derived part is discarded (slicing). After that, each element is a real `B`, not a `D`, so virtual dispatch can only call `B::f()`.\n\nTo preserve polymorphism, store pointers/smart pointers (e.g., `std::vector<std::unique_ptr<B>>`)."
+  },
+  {
+    "id": "p0204",
+    "title": "Throw From noexcept",
+    "difficulty": 4,
+    "concepts": ["noexcept", "exceptions", "terminate", "runtime-error"],
+    "explanation": "`noexcept` means a function promises not to let exceptions escape.\n\nIf an exception tries to leave a `noexcept` function, the runtime calls `std::terminate()`, ending the program immediately.\n\nBecause the program terminates, this is treated as a runtime error (you won’t reach code after the call)."
+  },
+  {
+    "id": "p0205",
+    "title": "std::move On const Does Not Move",
+    "difficulty": 4,
+    "concepts": [
+      "std-move",
+      "move-semantics",
+      "const-correctness",
+      "overload-resolution"
+    ],
+    "explanation": "`std::move` does not move by itself; it just casts to an rvalue reference.\n\nWhen the source object is `const`, the expression has type `const S&&`. A move constructor typically has signature `S(S&&)` and cannot bind to `const S&&`, so it is not viable.\n\nThe compiler falls back to the copy constructor `S(const S&)`, so you see copy behavior, not move behavior."
+  },
+  {
+    "id": "p0206",
+    "title": "class Default Private Member",
+    "difficulty": 2,
+    "concepts": ["class", "access-control", "private", "member-access"],
+    "explanation": "In a `class`, members are **private by default**.\n\nSo `v` cannot be accessed from `main()` as `s.v`. Only member functions (like `get()`) and friends can access it.\n\nThis is a compile-time (semantic) error."
+  },
+  {
+    "id": "p0207",
+    "title": "friend Can Touch Private",
+    "difficulty": 2,
+    "concepts": ["friend", "access-control", "encapsulation", "functions"],
+    "explanation": "A `friend` function is granted access to the class’s private and protected members.\n\nHere `h(S&)` can modify `s.v` directly even though `v` is private.\n\nAfter `h` updates `v`, both the direct print inside `h` and the later `get()` observe the new value."
+  },
+  {
+    "id": "p0208",
+    "title": "Delete Through Non-Virtual Base",
+    "difficulty": 5,
+    "concepts": [
+      "polymorphism",
+      "destructors",
+      "virtual-destructor",
+      "delete",
+      "undefined-behavior"
+    ],
+    "explanation": "Deleting a derived object through a base pointer requires a **virtual destructor** in the base when the dynamic type differs from the static type.\n\nHere `B`’s destructor is not virtual, so `delete p;` where `p` points to a `D` has undefined behavior.\n\nThe program might appear to work, print only `'b'`, print `'db'`, or do something worse; none of it is reliable.",
+    "UB": true
+  },
+  {
+    "id": "p0209",
+    "title": "Name Hiding Picks Derived",
+    "difficulty": 4,
+    "concepts": [
+      "name-hiding",
+      "overload-resolution",
+      "inheritance",
+      "scope-resolution"
+    ],
+    "explanation": "When a derived class declares a function with the same name as a base function, it **hides all base overloads** with that name during unqualified lookup.\n\nSo `x.f(1)` only sees `D::f(double)` and converts `1` to `double`.\n\nYou can still call the base version explicitly with `x.B::f(1)` (or bring it in with `using B::f;`)."
+  },
+  {
+    "id": "p0210",
+    "title": "dynamic_cast Reference Fails",
+    "difficulty": 4,
+    "concepts": ["dynamic-cast", "RTTI", "polymorphism", "exceptions"],
+    "explanation": "`dynamic_cast` checks the object’s runtime (dynamic) type when casting within an inheritance hierarchy.\n\nCasting to a **reference** type throws `std::bad_cast` when the object isn’t actually of the requested derived type.\n\nSince `b` refers to an `E`, the cast to `D&` fails and the `catch` path runs."
+  },
+  {
+    "id": "p0211",
+    "title": "Static Member Not Defined",
+    "difficulty": 3,
+    "concepts": ["static-data-member", "ODR-use", "linking", "definitions"],
+    "explanation": "Declaring `static int v;` inside a class only declares it; it does not define storage for it.\n\nUsing `S::v` in a way that needs the object (an ODR-use) requires a definition like `int S::v = 0;` in a source file.\n\nBecause no definition exists, the program typically compiles but fails at link time (linker error)."
+  },
+  {
+    "id": "p0212",
+    "title": "Construction And Destruction Order",
+    "difficulty": 4,
+    "concepts": [
+      "construction-order",
+      "destruction-order",
+      "base-class",
+      "members",
+      "RAII"
+    ],
+    "explanation": "Construction order is fixed:\n\n1) Base subobjects are constructed first.\n2) Then data members are constructed in the order they are declared.\n3) Then the constructor body runs.\n\nDestruction is the reverse: derived destructor body, then members, then base destructor body, then base members. This is why the printed sequence shows the build-up first and the teardown in reverse order."
+  },
+  {
+    "id": "p0213",
+    "title": "Ambiguous Base Member",
+    "difficulty": 3,
+    "concepts": [
+      "multiple-inheritance",
+      "ambiguity",
+      "member-lookup",
+      "qualified-name"
+    ],
+    "explanation": "With multiple inheritance, `C` contains two separate subobjects: one `A` and one `B`.\n\nBoth bases have a member named `v`, so `c.v` is ambiguous: the compiler can’t know whether you mean `A::v` or `B::v`.\n\nYou must qualify it (`c.A::v` or `c.B::v`) or redesign to avoid the ambiguity."
+  },
+  {
+    "id": "p0214",
+    "title": "Bases Then Members",
+    "difficulty": 3,
+    "concepts": [
+      "construction-order",
+      "destruction-order",
+      "base-classes",
+      "member-initializer-list"
+    ],
+    "explanation": "Construction order is fixed by the language:\n\n- Base classes are constructed first, in the order they appear in the base-specifier list of the class (`class D : public B2, public B1`).\n- Then data members are constructed in the order they are declared in the class (`m1` then `m2`), not the order in the initializer list.\n- Then the constructor body runs.\n\nDestruction is the reverse:\n\n- The derived destructor body runs first.\n- Then members are destroyed in reverse declaration order.\n- Then base subobjects are destroyed in reverse base-list order."
+  },
+  {
+    "id": "p0215",
+    "title": "Virtual Base Built Once",
+    "difficulty": 5,
+    "concepts": [
+      "virtual-inheritance",
+      "diamond",
+      "construction-order",
+      "most-derived"
+    ],
+    "explanation": "With virtual inheritance, the virtual base subobject is constructed **once**.\n\nKey rules:\n\n- Virtual base classes are initialized by the **most derived** constructor (`M`), even if intermediate classes (`L`, `R`) mention `V(...)` in their initializer lists.\n- After virtual bases, direct (non-virtual) bases are constructed in the order listed in `M`’s base list (`L` then `R`).\n- Then `M`’s members are constructed, then `M`’s constructor body runs.\n\nDestruction happens in reverse, with the virtual base destroyed last."
+  },
+  {
+    "id": "p0216",
+    "title": "Throw During Member Construction",
+    "difficulty": 5,
+    "concepts": [
+      "exceptions",
+      "constructors",
+      "stack-unwinding",
+      "partial-construction",
+      "destruction-order"
+    ],
+    "explanation": "Members are still constructed in **declaration order** (`a`, then `b`, then `c`), regardless of the initializer list order.\n\nWhen `Q b` throws during construction:\n\n- The object `S` is not fully constructed, so `S`’s constructor body does not run.\n- Destructors are called only for subobjects that were fully constructed. Here, only `a` was constructed, so only `a` is destroyed during stack unwinding.\n- `b` is not fully constructed (its constructor threw), so `b`’s destructor is not called.\n\nThen control transfers to the `catch` block in `main`."
+  },
+  {
+    "id": "p0217",
+    "title": "Delegating Constructor Prints Twice",
+    "difficulty": 4,
+    "concepts": [
+      "delegating-constructors",
+      "construction-order",
+      "members",
+      "destruction-order"
+    ],
+    "explanation": "A delegating constructor (`S() : S(0) { ... }`) first runs the **target constructor** (`S(int)`).\n\nImportant consequences:\n\n- Member initialization happens in the target constructor. The delegating constructor does not initialize members itself.\n- After the target constructor finishes, the delegating constructor’s body runs.\n\nDestruction still follows the usual rule: destructor body first, then members in reverse declaration order."
+  },
+  {
+    "id": "p0218",
+    "title": "Default Member Initializer Overridden",
+    "difficulty": 3,
+    "concepts": [
+      "default-member-initializer",
+      "member-initializer-list",
+      "construction-order",
+      "destruction-order"
+    ],
+    "explanation": "In-class member initializers (`P a{'a'};`) provide defaults used when the constructor doesn’t explicitly initialize that member.\n\nHere:\n\n- `a` uses its default member initializer.\n- `b` is explicitly initialized in the constructor (`b('x')`), which overrides the in-class initializer for `b`.\n\nMembers are still constructed in declaration order (`a` then `b`) and destroyed in reverse order."
+  },
+  {
+    "id": "p0219",
+    "title": "Destruction Ignores Init-List Order",
+    "difficulty": 3,
+    "concepts": [
+      "member-initializer-list",
+      "construction-order",
+      "destruction-order",
+      "declaration-order"
+    ],
+    "explanation": "Even if the initializer list mentions members in a different order, construction is by **declaration order** (`a`, `b`, `c`).\n\nDestruction is the reverse of construction:\n\n- The destructor body runs first.\n- Then members are destroyed in reverse declaration order (`c`, then `b`, then `a`).\n\nSo both construction and destruction ignore the order written in the initializer list."
+  },
+  {
+    "id": "p0220",
+    "title": "Private Inheritance Conversion Fails",
+    "difficulty": 3,
+    "concepts": [
+      "class",
+      "inheritance",
+      "access-control",
+      "implicit-conversion"
+    ],
+    "explanation": "For `class`, inheritance is **private by default**.\n\nSo `class D : B {}` makes `B` an inaccessible base of `D` for code outside `D`. The implicit conversion from `D*` to `B*` is therefore not allowed in `main`, causing a compile-time (semantic) error.\n\nWriting `class D : public B {}` would make the conversion accessible."
+  },
+  {
+    "id": "p0221",
+    "title": "Throw In Base Constructor",
+    "difficulty": 5,
+    "concepts": [
+      "exceptions",
+      "base-classes",
+      "constructors",
+      "stack-unwinding",
+      "partial-construction"
+    ],
+    "explanation": "Base classes are constructed before derived members and before the derived constructor body.\n\nWhen `B()` throws:\n\n- The derived object `D` is not constructed at all, so `D`’s members and destructor do not run.\n- `B` is not fully constructed, so `~B()` does not run.\n- However, any fully constructed subobjects of `B` (like member `b`) are destroyed during stack unwinding.\n\nControl then goes to the `catch` in `main`."
+  },
+  {
+    "id": "p0222",
+    "title": "const Member Overload",
+    "difficulty": 2,
+    "concepts": [
+      "class",
+      "const-correctness",
+      "overload-resolution",
+      "member-functions"
+    ],
+    "explanation": "Member functions can be overloaded on `const`.\n\nWhen you call a member function on a non-const object (`s`), the non-const overload is a better match.\n\nWhen you call it through a `const S&` (`r`), only the `const` overload is viable, so that one is selected."
+  },
+  {
+    "id": "p0223",
+    "title": "Signed vs Unsigned Comparison",
+    "difficulty": 4,
+    "concepts": [
+      "integer-conversions",
+      "signed-unsigned",
+      "usual-arithmetic-conversions",
+      "comparisons"
+    ],
+    "explanation": "When comparing a signed and an unsigned integer type, the signed value is often converted to unsigned.\n\nSo `-1` becomes a very large unsigned value, which can make comparisons look surprising.\n\nThis is a common real-world source of logic bugs; prefer consistent signedness (or explicit casts with care)."
+  },
+  {
+    "id": "p0224",
+    "title": "Embedded NUL in std::string",
+    "difficulty": 4,
+    "concepts": ["std-string", "c_str", "embedded-null", "C-strings"],
+    "explanation": "`std::string` can contain `\\0` in the middle and its `size()` counts it like any other character.\n\nBut `c_str()` returns a null-terminated C string (`const char*`), and streaming a `const char*` prints until the first `\\0`.\n\nSo the size reflects all characters, while `c_str()` output stops early."
+  },
+  {
+    "id": "p0225",
+    "title": "explicit operator bool in if",
+    "difficulty": 4,
+    "concepts": [
+      "explicit",
+      "conversion-operator",
+      "contextual-bool",
+      "if-statement"
+    ],
+    "explanation": "An `explicit operator bool()` is not allowed for general implicit conversions, but it *is* allowed in contexts that require a boolean condition (contextual conversion to bool), like `if`, `while`, and the condition of `?:`.\n\nSo `if (a)` and `if (b)` both call the conversion operator.\n\nBecause the operator also prints a character, you see evidence of when it is invoked."
+  },
+  {
+    "id": "p0226",
+    "title": "Move into Lambda Capture",
+    "difficulty": 4,
+    "concepts": [
+      "lambda",
+      "init-capture",
+      "move-semantics",
+      "unique_ptr",
+      "ownership"
+    ],
+    "explanation": "An init-capture like `[q = std::move(p)]` moves the resource into the lambda’s closure object.\n\nAfter the move, `p` becomes empty (null), while `q` inside the lambda owns the resource.\n\nSo checking `p` prints false, and checking `q` prints true."
+  },
+  {
+    "id": "p0227",
+    "title": "optional value_or",
+    "difficulty": 2,
+    "concepts": ["std-optional", "value_or", "emplace", "value-category"],
+    "explanation": "`std::optional<int>` can be empty.\n\n`value_or(3)` returns the contained value if present, otherwise it returns the provided fallback.\n\nAfter `emplace(4)`, the optional contains `4`, so the second `value_or(3)` uses `4`."
+  },
+  {
+    "id": "p0228",
+    "title": "map operator[] Inserts",
+    "difficulty": 3,
+    "concepts": ["std-map", "operator[]", "default-insert", "size"],
+    "explanation": "`std::map::operator[]` inserts a default-constructed value if the key does not exist.\n\nSo `m[1] += 1;` first inserts key `1` with value `0`, then increments it to `1`.\n\nThis is convenient, but it can also cause unintended insertions; use `find`/`contains`/`at` when you don’t want insertion."
+  },
+  {
+    "id": "p0229",
+    "title": "at() Throws Uncaught",
+    "difficulty": 3,
+    "concepts": [
+      "std-vector",
+      "at",
+      "exceptions",
+      "terminate",
+      "runtime-error"
+    ],
+    "explanation": "`v.at(0)` performs bounds checking and throws an exception (typically `std::out_of_range`) when the index is invalid.\n\nBecause the exception is not caught, the program calls `std::terminate` and ends immediately.\n\nThis is treated as a runtime error."
+  },
+  {
+    "id": "p0230",
+    "title": "Shift Count Out of Range",
+    "difficulty": 4,
+    "concepts": ["bit-shift", "undefined-behavior", "integer-operations"],
+    "explanation": "For shift operations, shifting by a count that is greater than or equal to the number of value bits of the type is undefined behavior.\n\nHere the shift count is `sizeof(unsigned) * 8`, which equals the width (in bits) of `unsigned` on typical platforms.\n\nThat makes `x << s` undefined behavior, so the output is not reliable.",
+    "UB": true
+  },
+  {
+    "id": "p0231",
+    "title": "Deleted Copy Constructor",
+    "difficulty": 2,
+    "concepts": [
+      "deleted-functions",
+      "copy-constructor",
+      "class",
+      "initialization"
+    ],
+    "explanation": "Marking a copy constructor as `= delete` forbids copying.\n\n`S b = a;` performs copy-initialization and requires an accessible copy constructor.\n\nSince copying is deleted, the program is ill-formed and fails to compile (semantic error)."
+  },
+  {
+    "id": "p0232",
+    "title": "vector<bool> Proxy Copy",
+    "difficulty": 4,
+    "concepts": [
+      "std-vector-bool",
+      "proxy-reference",
+      "auto",
+      "implicit-conversion"
+    ],
+    "explanation": "`std::vector<bool>` is a specialized container that does not return a real `bool&` from `operator[]`.\n\n`auto a = v[0];` stores a proxy object that refers to the bit inside the vector, so assigning to `a` writes back into the vector.\n\nBut `bool b = v[0];` stores a plain `bool` copy, so it does not change when the vector changes."
+  },
+  {
+    "id": "p0233",
+    "title": "enum class Not int",
+    "difficulty": 2,
+    "concepts": [
+      "enum-class",
+      "strong-typing",
+      "implicit-conversion",
+      "compile-error"
+    ],
+    "explanation": "`enum class` is strongly typed: it does not implicitly convert to `int`.\n\nSo `int x = E::A;` is ill-formed.\n\nUse an explicit cast (or `std::to_underlying` in newer standards) when you really need the underlying integer value."
+  },
+  {
+    "id": "p0234",
+    "title": "Hidden Friend ADL",
+    "difficulty": 4,
+    "concepts": [
+      "ADL",
+      "hidden-friend",
+      "unqualified-lookup",
+      "overload-resolution"
+    ],
+    "explanation": "A friend function defined inside a class is not found by normal unqualified lookup as a global name.\n\nHowever, it *is* found by Argument-Dependent Lookup (ADL) when you call it with an argument of that class type.\n\nSo `f(s)` finds the friend `f(S)`, while `f(0)` calls the normal global `f(int)`."
+  },
+  {
+    "id": "p0235",
+    "title": "variant Visit Overload",
+    "difficulty": 3,
+    "concepts": ["std-variant", "std-visit", "if-constexpr", "type-traits"],
+    "explanation": "`std::variant` stores one of several alternative types.\n\n`std::visit` dispatches to the visitor based on the variant’s currently active type.\n\nHere the visitor uses `if constexpr` and `std::is_same_v` to print different characters depending on whether it sees an `int` or a `char`."
+  },
+  {
+    "id": "p0236",
+    "title": "decltype Conditional Is Reference",
+    "difficulty": 5,
+    "concepts": [
+      "decltype",
+      "conditional-operator",
+      "references",
+      "value-categories"
+    ],
+    "explanation": "The conditional operator can yield an lvalue when both operands are lvalues of the same type.\n\n`decltype(expr)` preserves references for lvalue expressions, so `decltype(true ? x : y)` becomes `int&` here.\n\nThat makes `r` a reference bound to `x`, so assigning to `r` changes `x`."
+  },
+  {
+    "id": "p0237",
+    "title": "move_if_noexcept Chooses Copy",
+    "difficulty": 4,
+    "concepts": [
+      "std-move-if-noexcept",
+      "noexcept",
+      "move-semantics",
+      "copy-semantics"
+    ],
+    "explanation": "`std::move_if_noexcept` returns an rvalue reference only when moving is declared `noexcept` (or when copying is not possible).\n\nIf moving could throw and copying exists, it prefers returning a `const&` to force a copy instead.\n\nHere the move constructor is `noexcept(false)` and a copy constructor exists, so the copy constructor is used."
+  },
+  {
+    "id": "p0238",
+    "title": "Throwing Destructor During Unwind",
+    "difficulty": 5,
+    "concepts": [
+      "exceptions",
+      "destructors",
+      "stack-unwinding",
+      "terminate",
+      "runtime-error"
+    ],
+    "explanation": "When an exception is already being propagated (stack unwinding), all fully constructed local objects are destroyed.\n\nIf a destructor throws during this unwinding and the exception is not handled inside the destructor, the program calls `std::terminate`.\n\nThat ends the program immediately, so this is a runtime error."
+  },
+  {
+    "id": "p0239",
+    "title": "Dangling Pointer After Reallocation",
+    "difficulty": 5,
+    "concepts": [
+      "std-vector",
+      "reallocation",
+      "dangling-pointer",
+      "undefined-behavior"
+    ],
+    "explanation": "Pointers/references/iterators to `std::vector` elements are invalidated when the vector reallocates.\n\n`reserve(1)` ensures the capacity is 1, so pushing a second element forces a reallocation.\n\nAfter that, `p` points to old storage; dereferencing it is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0240",
+    "title": "string_view Substr",
+    "difficulty": 2,
+    "concepts": ["std-string-view", "substr", "lifetime", "string-literals"],
+    "explanation": "`std::string_view` is a non-owning view, and a string literal has static storage duration, so the view remains valid.\n\n`size()` returns the number of characters in the view.\n\n`substr(1, 1)` creates another view into the same characters, so streaming it prints the selected slice."
+  },
+  {
+    "id": "p0241",
+    "title": "shared_from_this Without shared_ptr",
+    "difficulty": 4,
+    "concepts": [
+      "enable-shared-from-this",
+      "shared_ptr",
+      "exceptions",
+      "bad-weak-ptr"
+    ],
+    "explanation": "`std::enable_shared_from_this` only works when the object is actually owned by a `std::shared_ptr`.\n\nIf you create the object as a normal local variable and call `shared_from_this()`, it throws `std::bad_weak_ptr`.\n\nBecause the exception is uncaught, the program terminates (runtime error)."
+  },
+  {
+    "id": "p0242",
+    "title": "Dependent Type Needs typename",
+    "difficulty": 4,
+    "concepts": ["templates", "dependent-names", "typename", "parsing"],
+    "explanation": "Inside a template, `T::value_type` is a **dependent name**: the compiler can’t know yet whether it refers to a type or a value.\n\nWithout `typename`, the compiler treats it as a non-type, and the declaration fails to parse as a type declaration.\n\nFix: write `typename T::value_type x{};`."
+  },
+  {
+    "id": "p0243",
+    "title": "using Unhides Base Overloads",
+    "difficulty": 4,
+    "concepts": [
+      "inheritance",
+      "name-hiding",
+      "overload-resolution",
+      "using-declaration"
+    ],
+    "explanation": "When a derived class declares a function named `f`, it **hides all** base class overloads named `f` for unqualified calls.\n\nSo `D1` only has `f(double)` visible, and `'x'` is converted to `double`.\n\n`D2` uses `using B::f;` to re-introduce the base overloads into the overload set, so the exact match `f(char)` is selected."
+  },
+  {
+    "id": "p0244",
+    "title": "Base And Member Lifetime Trace",
+    "difficulty": 5,
+    "concepts": [
+      "construction-order",
+      "destruction-order",
+      "base-classes",
+      "members",
+      "initializer-list"
+    ],
+    "explanation": "Construction order is fixed:\n\n- Base classes are constructed first, in the order they appear in the base list (`B2` then `B1`).\n- Then members of the most-derived class are constructed in declaration order (`c` then `d`), regardless of the initializer list order.\n- Then the constructor body runs.\n\nDestruction reverses that:\n\n- Derived destructor body runs first, then derived members are destroyed in reverse declaration order.\n- Then base subobjects are destroyed in reverse base-list order, and each base destroys its members in reverse member declaration order.\n\nThe printed trace makes the rule visible even though the initializer lists are intentionally “out of order”."
+  },
+  {
+    "id": "p0245",
+    "title": "Macro Precedence Trap",
+    "difficulty": 3,
+    "concepts": [
+      "preprocessor",
+      "macros",
+      "operator-precedence",
+      "substitution"
+    ],
+    "explanation": "Macros are simple text substitution.\n\n`2 * F(3)` becomes `2 * 3 + 1`, not `2 * (3 + 1)`.\n\nA common mitigation is to parenthesize macro parameters and the whole expansion: `#define F(x) ((x) + 1)`."
+  },
+  {
+    "id": "p0246",
+    "title": "Dependent Base Needs this->",
+    "difficulty": 5,
+    "concepts": [
+      "templates",
+      "two-phase-lookup",
+      "dependent-base",
+      "name-lookup"
+    ],
+    "explanation": "In a class template, members of a dependent base class (`B<T>`) are not found by unqualified lookup during the initial template definition.\n\nSo `v` is not found in `D<T>::f()` unless you qualify it.\n\nFixes include `this->v`, `B<T>::v`, or bringing it in with `using B<T>::v;`."
+  },
+  {
+    "id": "p0247",
+    "title": "Pointer To Member Data",
+    "difficulty": 3,
+    "concepts": ["pointer-to-member", "class", "member-access", "operators"],
+    "explanation": "A pointer-to-member (`int S::*`) is not a normal pointer.\n\nYou use `s.*p` for an object and `ptr->*p` for a pointer to an object.\n\nHere `p` points to `S::v`, so `s.*p = 3;` assigns through that member pointer."
+  },
+  {
+    "id": "p0248",
+    "title": "Reference Member Binds Temporary",
+    "difficulty": 5,
+    "concepts": [
+      "lifetime",
+      "temporaries",
+      "reference-member",
+      "constructors",
+      "undefined-behavior"
+    ],
+    "explanation": "The reference member `r` is bound in the constructor initializer to a temporary `std::string`.\n\nThat temporary’s lifetime is **not** extended to the lifetime of the object; it ends at the end of the full-expression that constructs `S`.\n\nAfter construction, `r` dangles, and using it (printing it) is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0249",
+    "title": "std::function Needs Copyable Target",
+    "difficulty": 4,
+    "concepts": [
+      "std-function",
+      "lambdas",
+      "move-capture",
+      "copy-constructible",
+      "type-erasure"
+    ],
+    "explanation": "`std::function` requires its stored callable to be **CopyConstructible**.\n\nA lambda that move-captures a `std::unique_ptr` is not copyable, so it cannot be stored in `std::function`.\n\nAlternatives include using a move-only wrapper (like `std::move_only_function` in newer standards), storing the lambda in an `auto` variable and keeping it move-only, or using `std::shared_ptr` if shared ownership is acceptable."
+  },
+  {
+    "id": "p0250",
+    "title": "Fold Expression Sum",
+    "difficulty": 3,
+    "concepts": [
+      "variadic-templates",
+      "fold-expressions",
+      "comma-operator",
+      "templates"
+    ],
+    "explanation": "A fold expression lets you apply an operation over a parameter pack.\n\n`((r += xs), ...)` is a fold over the comma operator, so each `r += xs` is evaluated in order and the final `r` is returned.\n\nThis is a compact way to aggregate values without recursion."
+  },
+  {
+    "id": "p0251",
+    "title": "noexcept Mismatch On Override",
+    "difficulty": 4,
+    "concepts": [
+      "virtual-functions",
+      "override",
+      "noexcept",
+      "exception-specification"
+    ],
+    "explanation": "When overriding a virtual function, the derived function’s exception specification must be at least as strict as the base’s.\n\nIf the base function is `noexcept`, an override that can throw (`noexcept(false)`) is not allowed.\n\nSo this is ill-formed and fails to compile."
+  },
+  {
+    "id": "p0252",
+    "title": "Narrowing With Braces",
+    "difficulty": 2,
+    "concepts": ["list-initialization", "narrowing", "braces", "compile-error"],
+    "explanation": "Brace initialization (`{}`) forbids narrowing conversions.\n\n`int x{1.2};` would require converting a `double` to an `int` with loss of information, so the program is ill-formed and fails to compile.\n\nUsing `int x = 1.2;` or `int x(1.2);` compiles but truncates the value (and may warn)."
+  },
+  {
+    "id": "p0253",
+    "title": "Perfect Forwarding Picks Overload",
+    "difficulty": 4,
+    "concepts": [
+      "perfect-forwarding",
+      "forwarding-reference",
+      "overload-resolution",
+      "value-categories"
+    ],
+    "explanation": "`T&&` in a function template can be a forwarding reference.\n\n`std::forward<T>(t)` preserves whether the original argument was an lvalue or rvalue, so it selects `f(int&)` for an lvalue and `f(int&&)` for an rvalue.\n\nThat’s why the two calls print different characters."
+  },
+  {
+    "id": "p0254",
+    "title": "mutable In const Method",
+    "difficulty": 3,
+    "concepts": ["class", "const-correctness", "mutable", "member-functions"],
+    "explanation": "A `const` member function cannot modify non-mutable data members.\n\nA `mutable` member is an exception: it can be modified even inside `const` member functions.\n\nThis is commonly used for caches and counters that don’t affect the logical state."
+  },
+  {
+    "id": "p0255",
+    "title": "SFINAE Integral vs Other",
+    "difficulty": 5,
+    "concepts": [
+      "SFINAE",
+      "enable_if",
+      "overload-resolution",
+      "type-traits",
+      "templates"
+    ],
+    "explanation": "`std::enable_if_t<cond, int>` can be used to make an overload participate only when `cond` is true.\n\nIf substituting template arguments makes the signature ill-formed, that overload is simply removed from the overload set (SFINAE), rather than causing a hard compile error.\n\nHere one overload accepts integral types and the other accepts non-integral types."
+  },
+  {
+    "id": "p0256",
+    "title": "delete vs delete[] Mismatch",
+    "difficulty": 4,
+    "concepts": [
+      "dynamic-allocation",
+      "delete",
+      "delete-array",
+      "undefined-behavior"
+    ],
+    "explanation": "Memory allocated with `new[]` must be released with `delete[]`.\n\nUsing `delete` on a pointer returned by `new[]` is undefined behavior.\n\nEven if it seems to work on some runs, it can corrupt the program state or leak/destroy the wrong number of elements.",
+    "UB": true
+  },
+  {
+    "id": "p0257",
+    "title": "Modifying String Literal",
+    "difficulty": 4,
+    "concepts": [
+      "string-literals",
+      "const-cast",
+      "undefined-behavior",
+      "memory"
+    ],
+    "explanation": "String literals have static storage duration, and modifying their contents is undefined behavior.\n\n`const_cast` can remove `const` from a pointer type, but it does not make a non-modifiable object modifiable.\n\nWriting through `p` attempts to modify a string literal and triggers undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0258",
+    "title": "Base + Members Throw Trace",
+    "difficulty": 5,
+    "concepts": [
+      "exceptions",
+      "constructors",
+      "base-classes",
+      "members",
+      "stack-unwinding",
+      "destruction-order"
+    ],
+    "explanation": "Construction happens in this order: base class subobjects first, then members in declaration order.\n\nWhen a member constructor throws, the partially constructed object is abandoned and stack unwinding destroys all fully constructed subobjects: first the already-built derived members (in reverse order), then the base subobject (including its members).\n\nOnly destructors for objects that finished construction run; the throwing member is not considered fully constructed."
+  },
+  {
+    "id": "p0259",
+    "title": "optional reset Destroys Value",
+    "difficulty": 3,
+    "concepts": ["std-optional", "emplace", "reset", "RAII", "destructors"],
+    "explanation": "`std::optional<T>` conditionally contains a `T`.\n\n`emplace()` constructs the contained `T` in-place, and `reset()` destroys it (if present) and makes the optional empty again.\n\nThe printed trace shows exactly when construction and destruction occur."
+  },
+  {
+    "id": "p0260",
+    "title": "std::invoke Member Function Pointer",
+    "difficulty": 4,
+    "concepts": [
+      "std-invoke",
+      "pointer-to-member",
+      "reference-wrapper",
+      "callables"
+    ],
+    "explanation": "`std::invoke` provides a uniform way to call callables, including pointers to member functions.\n\nWhen invoking a member function pointer, you can pass either an object (`s`) or a `std::reference_wrapper` (`std::ref(s)`), and `std::invoke` will call the member correctly.\n\nThe member function itself performs the output."
+  },
+  {
+    "id": "p0261",
+    "title": "Placement new + Manual Destruction",
+    "difficulty": 4,
+    "concepts": [
+      "placement-new",
+      "object-lifetime",
+      "manual-destruction",
+      "alignment"
+    ],
+    "explanation": "Placement `new` constructs an object in a caller-provided memory buffer; it does not allocate memory.\n\nBecause the memory wasn’t allocated with normal `new`, you must not `delete` the pointer. Instead, you end the object’s lifetime by calling the destructor explicitly (`p->~S();`).\n\nCorrect alignment of the buffer is required, which is why `alignas(S)` is used."
+  },
+  {
+    "id": "p0262",
+    "title": "Const Member Deletes Assignment",
+    "difficulty": 3,
+    "concepts": [
+      "class",
+      "const-data-member",
+      "copy-assignment",
+      "deleted-functions"
+    ],
+    "explanation": "A class that contains a non-static **const** data member cannot use the implicitly generated copy assignment operator, because assignment would need to overwrite that const member.\n\nSo `a = b;` is ill-formed: the copy assignment operator is implicitly deleted.\n\nYou can still make such a type copy-constructible, but for assignability you typically remove `const` members, store them in a separate shared object, or define a custom assignment that assigns only the non-const parts (if that matches the intended semantics)."
+  },
+  {
+    "id": "p0263",
+    "title": "shared_ptr Aliasing use_count",
+    "difficulty": 5,
+    "concepts": [
+      "shared_ptr",
+      "aliasing-constructor",
+      "ownership",
+      "use_count",
+      "object-lifetime"
+    ],
+    "explanation": "The aliasing constructor `std::shared_ptr<T>(owner, ptr)` creates a `shared_ptr` that **shares the control block** (ownership) with `owner` but stores a different pointer value (`ptr`).\n\nHere, `sp`, `ap`, and `bp` all share ownership of the same `S` object, so `use_count()` is the same for all of them.\n\nAfter `sp.reset()`, the object still stays alive because `ap` and `bp` keep the control block alive; their `use_count()` reflects only the remaining owners."
+  },
+  {
+    "id": "p0264",
+    "title": "Virtual Call Inside Destructor",
+    "difficulty": 4,
+    "concepts": [
+      "virtual-functions",
+      "destructors",
+      "dynamic-dispatch",
+      "polymorphism"
+    ],
+    "explanation": "Virtual dispatch during destruction behaves as if the object’s dynamic type is the class whose destructor is currently running.\n\nSo calls made inside `D::~D()` dispatch to `D::f()`, but once control reaches `B::~B()`, the `D` part is already destroyed and the call dispatches to `B::f()`.\n\nThe output shows the derived destructor actions first, then the base destructor actions."
+  },
+  {
+    "id": "p0265",
+    "title": "any_cast Success Then Exception",
+    "difficulty": 4,
+    "concepts": ["std-any", "any_cast", "exceptions", "RTTI"],
+    "explanation": "`std::any` stores a value with type erasure.\n\n`std::any_cast<T>` returns the stored value if the current stored type is exactly `T`; otherwise it throws `std::bad_any_cast` (for the reference/value overloads used here).\n\nThe first cast succeeds (stored type is `int`), then the stored type becomes `char`, so casting to `int` throws and the program prints from the catch block."
+  },
+  {
+    "id": "p0266",
+    "title": "initializer_list Stored in Class",
+    "difficulty": 5,
+    "concepts": [
+      "initializer_list",
+      "lifetime",
+      "dangling",
+      "class-members",
+      "undefined-behavior"
+    ],
+    "explanation": "`std::initializer_list` is a lightweight view (pointer + size) into an array that is created for the braced initializer.\n\nWhen you store an initializer_list in a data member, the underlying array created by `{1,2,3}` does **not** live as long as the object; it typically ends at the end of the full-expression that constructs `S`.\n\nAfter that, the member `l` dangles, and dereferencing `l.begin()` is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0267",
+    "title": "Erase While Iterating",
+    "difficulty": 3,
+    "concepts": ["std-vector", "erase", "iterators", "looping"],
+    "explanation": "`std::vector::erase` invalidates iterators at and after the erased position, but it returns a new valid iterator to the next element.\n\nThe safe erase-while-iterating pattern is to assign `it = v.erase(it)` when you erase, and only increment when you don’t.\n\nThis removes all `2` values and then prints the final size and elements."
+  },
+  {
+    "id": "p0268",
+    "title": "std::exchange Returns Old",
+    "difficulty": 2,
+    "concepts": ["std-exchange", "assignment", "utility"],
+    "explanation": "`std::exchange(x, new_value)` assigns `new_value` into `x` and returns the old value of `x`.\n\nSo printing the return value and then `x` shows the “before” and “after” values back-to-back.\n\nThis is useful for replacing a value while still needing the previous one."
+  },
+  {
+    "id": "p0269",
+    "title": "explicit Conversion Not Implicit",
+    "difficulty": 4,
+    "concepts": [
+      "explicit",
+      "conversion-operator",
+      "implicit-conversion",
+      "overload-resolution"
+    ],
+    "explanation": "An `explicit` conversion operator is not considered for general implicit conversions.\n\nIn the expression `s + 1`, the compiler would need to implicitly convert `s` to an arithmetic type, but `explicit operator int()` is not allowed to participate implicitly here.\n\nTherefore the expression is ill-formed and compilation fails (semantic error)."
+  },
+  {
+    "id": "p0270",
+    "title": "std::array Copies Values",
+    "difficulty": 2,
+    "concepts": ["std-array", "copy", "value-semantics"],
+    "explanation": "`std::array` has value semantics: copying an array copies all of its elements.\n\nSo `auto b = a;` makes an independent copy.\n\nModifying `b[0]` does not affect `a[0]`, and printing both shows different values."
+  },
+  {
+    "id": "p0271",
+    "title": "Non-Type Template Arg Must Be Constant",
+    "difficulty": 3,
+    "concepts": [
+      "templates",
+      "non-type-template-parameter",
+      "constant-expression",
+      "compile-error"
+    ],
+    "explanation": "A non-type template argument like `S<n>` must be a constant expression.\n\nHere `n` is a runtime `int`, so it cannot be used as a template argument.\n\nUse a literal (`S<3>`), `constexpr int n = 3;`, or pass the value at runtime instead of as a template parameter."
+  },
+  {
+    "id": "p0272",
+    "title": "Range-for braced list",
+    "difficulty": 2,
+    "concepts": ["range-for", "initializer_list", "temporary-lifetime"],
+    "explanation": "The range-based `for` creates an internal variable that binds the range expression, then iterates from `begin` to `end`.\n\nA temporary range object (including an `std::initializer_list` temporary) lives long enough for the whole loop, so iterating and printing the elements is well-defined.\n\nThis is a common pattern for quick iteration over a fixed set of values."
+  },
+  {
+    "id": "p0273",
+    "title": "Braces prefer initializer_list",
+    "difficulty": 3,
+    "concepts": [
+      "list-initialization",
+      "initializer_list",
+      "overload-resolution",
+      "constructors"
+    ],
+    "explanation": "With list-initialization (`{}`), constructors that take `std::initializer_list` get special preference if they are viable.\n\nSo `S b{1, 2};` selects the initializer_list constructor even though `S(int,int)` also exists.\n\nParentheses (`S a(1,2);`) do not trigger that special preference and call the `(int,int)` constructor."
+  },
+  {
+    "id": "p0274",
+    "title": "auto braces vs equals",
+    "difficulty": 4,
+    "concepts": ["auto", "type-deduction", "braced-init", "initializer_list"],
+    "explanation": "`auto a = {1,2,3};` uses copy-list-initialization, and when all elements have the same type it deduces an `std::initializer_list<int>`.\n\n`auto b{1};` uses direct-list-initialization and deduces `int` (not an initializer_list) because there is a single element and it can deduce a plain scalar type.\n\nPrinting `a.size()` and `b` exposes the different deduced types."
+  },
+  {
+    "id": "p0275",
+    "title": "Non-constant template argument",
+    "difficulty": 3,
+    "concepts": [
+      "templates",
+      "non-type-template-parameter",
+      "constant-expression"
+    ],
+    "explanation": "A non-type template argument like `S<N>` requires `N` to be a constant expression.\n\n`f()` is a normal runtime function call, so `f()` is not a constant expression.\n\nTherefore `S<f()>` is ill-formed and the program fails to compile."
+  },
+  {
+    "id": "p0276",
+    "title": "Dereference after clear",
+    "difficulty": 5,
+    "concepts": [
+      "std-vector",
+      "object-lifetime",
+      "dangling",
+      "undefined-behavior"
+    ],
+    "explanation": "`v.data()` returns a pointer to the vector’s element storage.\n\nAfter `v.clear()`, the vector’s size becomes 0 and the lifetime of its elements ends; there is no `int` object at `p` anymore.\n\nDereferencing `p` therefore accesses a non-existent object, which is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0277",
+    "title": "weak_ptr expires",
+    "difficulty": 3,
+    "concepts": ["weak_ptr", "shared_ptr", "lifetime", "expired"],
+    "explanation": "`std::weak_ptr` observes an object managed by `std::shared_ptr` without extending its lifetime.\n\nWhile the `shared_ptr` exists in the inner scope, `w.expired()` is false.\n\nAfter the inner scope ends, the last owning `shared_ptr` is destroyed, the object is deleted, and `w.expired()` becomes true."
+  },
+  {
+    "id": "p0278",
+    "title": "const_cast on non-const object",
+    "difficulty": 4,
+    "concepts": ["const_cast", "references", "const-correctness"],
+    "explanation": "`const_cast` can remove `const` from a reference or pointer type.\n\nIt is only safe to modify through the cast if the original object was not actually const.\n\nHere the original object is a non-const `int x`, so writing through the casted reference updates `x`."
+  },
+  {
+    "id": "p0279",
+    "title": "Unsequenced modifications",
+    "difficulty": 5,
+    "concepts": [
+      "sequencing",
+      "function-arguments",
+      "undefined-behavior",
+      "post-increment"
+    ],
+    "explanation": "The order of evaluation of function call arguments is not guaranteed.\n\n`f(i++, i++)` modifies `i` twice without a guaranteed sequencing relationship between those modifications.\n\nThat makes the behavior undefined: the final value of `i` (and everything else) is not reliable.",
+    "UB": true
+  },
+  {
+    "id": "p0280",
+    "title": "decltype({}) is ill-formed",
+    "difficulty": 4,
+    "concepts": [
+      "decltype",
+      "braced-init-list",
+      "type-deduction",
+      "compile-error"
+    ],
+    "explanation": "A braced-init-list like `{1,2}` is not an expression with a normal type.\n\nBecause of that, `decltype({1,2})` is ill-formed in this context.\n\nIf you want an initializer_list type, you must name it explicitly (e.g., `std::initializer_list<int>`)."
+  },
+  {
+    "id": "p0281",
+    "title": "Range-for over temporary container",
+    "difficulty": 3,
+    "concepts": [
+      "range-for",
+      "temporary-lifetime",
+      "return-by-value",
+      "std-vector"
+    ],
+    "explanation": "The function returns a `std::vector<int>` by value, creating a temporary container.\n\nIn a range-based `for`, that temporary range object is kept alive for the duration of the loop, so iterating over it is well-defined.\n\nThe loop prints the elements of the returned vector in order."
+  },
+  {
+    "id": "p0282",
+    "title": "unique_ptr Polymorphic Destruction",
+    "difficulty": 3,
+    "concepts": [
+      "class",
+      "virtual-destructor",
+      "polymorphism",
+      "unique_ptr",
+      "RAII"
+    ],
+    "explanation": "`std::unique_ptr<B>` deletes through a base pointer.\n\nBecause `B` has a **virtual destructor**, deleting a `D` object through `B` correctly runs `D::~D()` first, then `B::~B()`.\n\nYou see `x` printed while the object is alive, then the destructors run at scope exit in the correct polymorphic order."
+  },
+  {
+    "id": "p0283",
+    "title": "Array Size Without Decay",
+    "difficulty": 3,
+    "concepts": [
+      "templates",
+      "array",
+      "array-decay",
+      "reference",
+      "non-type-template-parameter"
+    ],
+    "explanation": "When an array is passed by value, it decays to a pointer and loses its size.\n\nTaking the parameter as a reference to an array (`T (&)[N]`) prevents decay, so the compiler can deduce `N`.\n\nThe function returns the array length known at compile time."
+  },
+  {
+    "id": "p0284",
+    "title": "Tuple Structured Binding By Ref",
+    "difficulty": 4,
+    "concepts": [
+      "structured-bindings",
+      "tuple",
+      "references",
+      "auto&",
+      "assignment"
+    ],
+    "explanation": "`auto& [x, y] = t;` binds `x` and `y` as references to the elements of `t`.\n\nSo assigning to `x` modifies the first element inside the tuple.\n\nPrinting `std::get<0>(t)` and `y` shows the updated tuple value and the second element."
+  },
+  {
+    "id": "p0285",
+    "title": "Reference Member Deletes Assignment",
+    "difficulty": 4,
+    "concepts": [
+      "class",
+      "reference-member",
+      "copy-assignment",
+      "deleted-functions"
+    ],
+    "explanation": "References cannot be reseated after initialization.\n\nA compiler-generated copy assignment operator would have to assign all members, but “assigning” a reference member would mean assigning through it (to the referred object), not rebinding it, which is not the expected default behavior.\n\nSo the implicitly-declared copy assignment operator is deleted, and `x = y;` fails to compile."
+  },
+  {
+    "id": "p0286",
+    "title": "Address Of Overloaded Function",
+    "difficulty": 3,
+    "concepts": [
+      "overload-resolution",
+      "function-pointer",
+      "address-of",
+      "compile-error"
+    ],
+    "explanation": "`f` names an overload set (two different functions).\n\nTaking its address with `&f` requires choosing a specific overload, but there is no target type here to guide selection.\n\nSo the expression is ambiguous and the program is ill-formed (semantic error)."
+  },
+  {
+    "id": "p0287",
+    "title": "bitset Proxy vs bool",
+    "difficulty": 4,
+    "concepts": [
+      "std-bitset",
+      "proxy-reference",
+      "auto",
+      "implicit-conversion"
+    ],
+    "explanation": "`std::bitset::operator[]` returns a proxy object, not a `bool&`.\n\n`auto a = b[0];` stores that proxy, which still refers to the bit and can write back to the bitset.\n\n`bool c = b[0];` stores a plain `bool` snapshot, so it does not change when the bit changes."
+  },
+  {
+    "id": "p0288",
+    "title": "dynamic_cast Pointer Null",
+    "difficulty": 3,
+    "concepts": ["dynamic_cast", "RTTI", "polymorphism", "pointers"],
+    "explanation": "`dynamic_cast<D*>(p)` checks at runtime whether the object pointed to by `p` is actually a `D`.\n\nIf the cast fails for pointer casts, it returns `nullptr` (it does not throw).\n\nSince the object is an `E`, the cast fails and the program prints that the result is null."
+  },
+  {
+    "id": "p0289",
+    "title": "switch Case Not Constant",
+    "difficulty": 3,
+    "concepts": [
+      "switch",
+      "case-label",
+      "constant-expression",
+      "compile-error"
+    ],
+    "explanation": "A `case` label must be an integral constant expression.\n\n`const int x = f();` is const, but its value is computed at runtime, so it is not a constant expression.\n\nTherefore `case x:` is ill-formed and compilation fails."
+  },
+  {
+    "id": "p0290",
+    "title": "CTAD vector Size",
+    "difficulty": 2,
+    "concepts": [
+      "CTAD",
+      "class-template-argument-deduction",
+      "std-vector",
+      "list-initialization"
+    ],
+    "explanation": "With class template argument deduction (CTAD), `std::vector v{1,2,3};` deduces `v` as `std::vector<int>`.\n\nThe braced initializer provides three elements.\n\nSo `v.size()` reports the number of elements constructed."
+  },
+  {
+    "id": "p0291",
+    "title": "uint32_t Wraparound",
+    "difficulty": 3,
+    "concepts": [
+      "unsigned-integers",
+      "wraparound",
+      "cstdint",
+      "integer-arithmetic"
+    ],
+    "explanation": "Unsigned integer arithmetic is performed modulo `2^N` for an N-bit unsigned type.\n\nFor `std::uint32_t`, decrementing zero wraps around to the maximum representable value.\n\nPrinting `x` shows that wrapped value."
+  },
+  {
+    "id": "p0292",
+    "title": "Global Construction Order",
+    "difficulty": 3,
+    "concepts": [
+      "static-storage",
+      "global-objects",
+      "construction-order",
+      "destruction-order"
+    ],
+    "explanation": "Objects with static storage duration in the same translation unit are constructed in the order they are defined.\n\nAt program end, destruction happens in the reverse order.\n\nThe trace prints during construction, then `main` prints, then destructors run after the newline."
+  },
+  {
+    "id": "p0293",
+    "title": "constexpr In case Label",
+    "difficulty": 2,
+    "concepts": ["constexpr", "switch", "constant-expression", "case-label"],
+    "explanation": "`case` labels must be compile-time integral constant expressions.\n\nA `constexpr` function can produce such a constant when called with constant inputs.\n\nSo the `case 3` branch is taken and prints the corresponding character."
+  },
+  {
+    "id": "p0294",
+    "title": "Function Template Specialization",
+    "difficulty": 4,
+    "concepts": [
+      "templates",
+      "explicit-specialization",
+      "overload-resolution",
+      "type-deduction"
+    ],
+    "explanation": "The primary template `f(T)` works for any type.\n\nThe explicit specialization `f<int>(int)` is used when `T` is exactly `int`.\n\nSo calling `f(1)` uses the specialization, while `f('x')` uses the primary template."
+  },
+  {
+    "id": "p0295",
+    "title": "Catch By Value Slices",
+    "difficulty": 4,
+    "concepts": [
+      "exceptions",
+      "polymorphism",
+      "slicing",
+      "catch-by-value",
+      "catch-by-reference"
+    ],
+    "explanation": "Catching a polymorphic base type **by value** copies only the base subobject (slicing), so virtual calls behave like a `B`.\n\nCatching **by reference** preserves the dynamic type of the thrown object.\n\nThat’s why the first call prints the base behavior and the second prints the derived behavior."
+  },
+  {
+    "id": "p0296",
+    "title": "vector Pointer Still Valid",
+    "difficulty": 4,
+    "concepts": [
+      "std-vector",
+      "reserve",
+      "reallocation",
+      "pointer-invalidation"
+    ],
+    "explanation": "Pointers (and iterators/references) to `std::vector` elements are invalidated when the vector reallocates.\n\n`reserve(2)` ensures enough capacity for two pushes, so the second `push_back` does not reallocate.\n\nTherefore the pointer remains valid and still points to the first element."
+  },
+  {
+    "id": "p0297",
+    "title": "User Destructor Prevents Move",
+    "difficulty": 5,
+    "concepts": [
+      "special-members",
+      "move-constructor",
+      "copy-constructor",
+      "std-vector",
+      "push_back"
+    ],
+    "explanation": "A user-declared destructor changes what special member functions are implicitly generated.\n\nIn this setup there is a copy constructor but no move constructor, so inserting an rvalue into the vector falls back to copying.\n\nThe trace shows: construct the temporary, copy into the vector, destroy the temporary, then destroy the element at the end of `main`."
+  },
+  {
+    "id": "p0298",
+    "title": "map insert Return Flag",
+    "difficulty": 3,
+    "concepts": [
+      "std-map",
+      "insert",
+      "pair",
+      "bool-flag",
+      "associative-containers"
+    ],
+    "explanation": "`map.insert({k, v})` returns a pair: an iterator and a boolean flag.\n\nThe flag is true only if insertion actually happened (the key was not already present).\n\nA second insertion with the same key fails, leaving the original mapped value unchanged."
+  },
+  {
+    "id": "p0299",
+    "title": "override Signature Mismatch",
+    "difficulty": 3,
+    "concepts": [
+      "virtual-functions",
+      "override",
+      "const-correctness",
+      "compile-error"
+    ],
+    "explanation": "`override` requires the function to exactly match a virtual function from the base (including `const`, ref-qualifiers, etc.).\n\nThe base has `void f() const`, but the derived declares `void f()` (non-const), so it does not override.\n\nBecause `override` is present, the compiler diagnoses it as an error."
+  },
+  {
+    "id": "p0300",
+    "title": "Returned Lambda Dangles",
+    "difficulty": 5,
+    "concepts": [
+      "lifetime",
+      "dangling-reference",
+      "lambdas",
+      "reference-capture",
+      "undefined-behavior"
+    ],
+    "explanation": "The lambda captures `x` by reference.\n\nBut `x` is a local variable inside `make()`, so it is destroyed when `make()` returns.\n\nCalling the returned lambda later uses a dangling reference, which is undefined behavior.",
+    "UB": true
+  },
+  {
+    "id": "p0301",
+    "title": "Structured Binding Copies",
+    "difficulty": 3,
+    "concepts": ["structured-bindings", "pair", "copy", "auto"],
+    "explanation": "`auto [a, b] = p;` creates new variables initialized from the elements of `p`.\n\nThese are copies, not references, so modifying `b` does not change `p.second`.\n\nPrinting both values shows that the pair stayed unchanged while the local copy changed."
   }
 ]
