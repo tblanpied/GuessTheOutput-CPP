@@ -10,7 +10,7 @@
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,css,scss,md}\"",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,css,scss,md}\"",
     "serve": "npx serve@latest out",
-    "deploy": "gh-pages -d out"
+    "deploy": "gh-pages -d out --nojekyll --dotfiles"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
