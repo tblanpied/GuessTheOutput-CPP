@@ -30,6 +30,10 @@ ANSI_STYLE_MAP = {
     "3": "italic",
 }
 
+SRC_FILE_PATTERN = re.compile(r'src/([a-zA-Z0-9_]+)\.cpp:')
+
+MAX_ERROR_MESSAGE_TOKEN = 150  # Maximum number of tokens in error messages (after ANSI parsing)
+
 def run_command(cmd, stdin=None):
     try:
         proc = subprocess.run(
@@ -37,7 +41,8 @@ def run_command(cmd, stdin=None):
             input=stdin,
             text=True,
             capture_output=True,
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
+            cwd=ROOT / "problems"
         )
         return proc
     except subprocess.TimeoutExpired:
@@ -45,7 +50,7 @@ def run_command(cmd, stdin=None):
 
 def strip_runner_line(stdout: str, pid: str) -> str:
     lines = stdout.splitlines(keepends=True)
-    if lines and lines[0].strip() == f"./build/bin/{pid}":
+    if lines and lines[0].strip() == f"./build/{pid}":
         return "".join(lines[1:])
     return stdout
 
@@ -88,8 +93,9 @@ def ansi_to_tokens(text: str):
                         elif c in ANSI_STYLE_MAP:
                             current_style = ANSI_STYLE_MAP[c]
             continue
-
+        
         # Payload text
+        part = SRC_FILE_PATTERN.sub("", part)
         if part:
             spans.append({
                 "color": current_color,
@@ -97,7 +103,7 @@ def ansi_to_tokens(text: str):
                 "text": part
             })
 
-    return spans
+    return spans[:MAX_ERROR_MESSAGE_TOKEN]
 
 def main():
     with open(PROBLEMS_JSON, "r", encoding="utf-8") as f:
@@ -117,7 +123,11 @@ def main():
             MAKE_CMD + ["problem", f"NAME={pid}"]
         )
         result = None
-        if compile_proc is None:
+        if problem.get("UB", False):
+            result = {
+                "errorType": "undefined-behavior",
+            }
+        elif compile_proc is None:
             result = {
                 "errorType": "compilation-error",
                 "errorMessage": ansi_to_tokens("Compilation timed out")
@@ -145,21 +155,16 @@ def main():
             elif run_proc.returncode != 0:
                 result = {
                     "errorType": "runtime-error",
-                    "errorMessage": run_proc.stderr.strip()
+                    "errorMessage": strip_make_error_line(run_proc.stderr.strip())
                 }
             else:
-                if problem.get("UB", False):
-                    result = {
-                        "errorType": "undefined-behavior",
-                    }
-                else:
-                    clean_stdout = strip_runner_line(
-                        run_proc.stdout, pid
-                    )
-                    result = {
-                        "errorType": "no-error",
-                        "stdout": clean_stdout
-                    }
+                clean_stdout = strip_runner_line(
+                    run_proc.stdout, pid
+                )
+                result = {
+                    "errorType": "no-error",
+                    "stdout": clean_stdout
+                }
 
         generated_problem = dict(problem)
         generated_problem["result"] = result

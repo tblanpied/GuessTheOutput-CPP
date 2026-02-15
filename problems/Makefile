@@ -6,8 +6,8 @@ CXXFLAGS := -std=c++17 -O2 -DNDEBUG \
 			-fdiagnostics-color=always
 
 # Directories
-SRC_DIR  := problems/src
-BIN_DIR  := build/bin
+SRC_DIR  := src
+BIN_DIR  := build
 
 # Autodetect all .cpp files and derive problem names (without .cpp)
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
